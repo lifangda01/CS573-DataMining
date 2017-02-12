@@ -9,6 +9,9 @@ parser.add_argument('testDataFilename', help="Name of the training data csv file
 
 args = parser.parse_args()
 
+def function():
+	pass
+
 def main():
 	print args.trainingDataFilename
 	print args.testDataFilename
