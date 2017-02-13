@@ -59,8 +59,10 @@ def dict_to_hist(list_of_dict):
 	hist = Counter()
 	for entry in list_of_dict:
 		# Split and count appearances
+		# Also make sure each unique word in one review is only counted once
 		words = entry['reviewText'].split(' ')
-		hist = hist + Counter(words)
+		unique_words = list(set(words))
+		hist = hist + Counter(unique_words)
 	return hist
 
 def construct_word_feature(list_of_dict):
@@ -92,6 +94,28 @@ def extract_word_feature_and_label(list_of_dict, feature_words):
 		y[i] = entry['classLabel']
 		mask = [word in entry['reviewText'].split(' ') for word in feature_words]
 		X[array(mask), i] = 1
+	return X, y
+
+def training_preprocess_from_csv(csv_file_name):
+	'''
+		Extract feature words, feature vectors and labels from a csv file.
+	'''
+	# Read the csv file into a list of dictionaries
+	reviews_dict = csv_to_dict(csv_file_name)
+	# Find the word features
+	feature_words = construct_word_feature(reviews_dict)
+	# Extract features and labels
+	X, y = extract_word_feature_and_label(reviews_dict, feature_words)
+	return feature_words, X, y
+
+def testing_preprocess_from_csv(csv_file_name, feature_words):
+	'''
+		Extract feature vectors and labels from a csv file.
+	'''
+	# Read the csv file into a list of dictionaries
+	reviews_dict = csv_to_dict(csv_file_name)
+	# Extract features and labels
+	X, y = extract_word_feature_and_label(reviews_dict, feature_words)
 	return X, y
 
 if __name__ == '__main__':
