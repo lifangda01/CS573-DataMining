@@ -47,6 +47,12 @@ def test_from_csv(csv_file_name, feature_words, M):
 	print "ZERO-ONE-LOSS %.4f" % S
 	return S
 
+def evaluate_wrt_train_size():
+	pass
+
+def evaluate_wrt_feature_size():
+	pass
+
 def main():
 	generate_train_and_test_files('yelp_data.csv', 0.8)
 	feature_words, knowledge_matrix = train_from_csv(args.trainingDataFilename)
