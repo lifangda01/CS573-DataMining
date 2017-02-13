@@ -87,9 +87,9 @@ def extract_word_feature_and_label(list_of_dict, feature_words):
 	num_reviews = len(list_of_dict)
 	num_features = len(feature_words)
 	# Feature vectors
-	X = zeros((num_features, num_reviews))
+	X = zeros((num_features, num_reviews)).astype(int)
 	# Ground-truth labels
-	y = zeros(num_reviews)
+	y = zeros(num_reviews).astype(int)
 	for i, entry in enumerate(list_of_dict):
 		y[i] = entry['classLabel']
 		mask = [word in entry['reviewText'].split(' ') for word in feature_words]
@@ -120,9 +120,5 @@ def testing_preprocess_from_csv(csv_file_name, feature_words):
 
 if __name__ == '__main__':
 	list_of_dict = csv_to_dict('train-set.dat')
-	# dict_to_csv(list_of_dict, 'test.csv')
-	# list_of_dict = csv_to_dict('test.csv')
-	# generate_train_and_test_files('yelp_data.csv', 0.80)
-	# dict_to_hist('test-set.dat')
 	feature_words = construct_word_feature(list_of_dict)
 	X, y = extract_word_feature_and_label(list_of_dict, feature_words)
