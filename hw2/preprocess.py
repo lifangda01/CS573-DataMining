@@ -65,19 +65,19 @@ def dict_to_hist(list_of_dict):
 		hist = hist + Counter(unique_words)
 	return hist
 
-def construct_word_feature(list_of_dict):
+def construct_word_feature(list_of_dict, num_words):
 	'''
 		Given a csv file, construct the word feature with the 101-500 most frequent words.
 		Return a list of the words.
 	'''
 	hist = dict_to_hist(list_of_dict)
 	# A list of tuples (word, count)
-	top_600 = hist.most_common(600)
+	top_N = hist.most_common(num_words+100)
 	# Print the top 10 words in the feature
-	for i, (w,_) in enumerate(top_600[100:110]):
+	for i, (w,_) in enumerate(top_N[100:110]):
 		print "WORD%d %s" % (i+1, w)
 	# Return top 101-600
-	return [w for w,_ in top_600[100:]]
+	return [w for w,_ in top_N[100:]]
 
 def extract_word_feature_and_label(list_of_dict, feature_words):
 	'''
@@ -96,14 +96,14 @@ def extract_word_feature_and_label(list_of_dict, feature_words):
 		X[array(mask), i] = 1
 	return X, y
 
-def training_preprocess_from_csv(csv_file_name):
+def training_preprocess_from_csv(csv_file_name, num_words):
 	'''
 		Extract feature words, feature vectors and labels from a csv file.
 	'''
 	# Read the csv file into a list of dictionaries
 	reviews_dict = csv_to_dict(csv_file_name)
 	# Find the word features
-	feature_words = construct_word_feature(reviews_dict)
+	feature_words = construct_word_feature(reviews_dict, num_words)
 	# Extract features and labels
 	X, y = extract_word_feature_and_label(reviews_dict, feature_words)
 	return feature_words, X, y
@@ -117,8 +117,3 @@ def testing_preprocess_from_csv(csv_file_name, feature_words):
 	# Extract features and labels
 	X, y = extract_word_feature_and_label(reviews_dict, feature_words)
 	return X, y
-
-if __name__ == '__main__':
-	list_of_dict = csv_to_dict('train-set.dat')
-	feature_words = construct_word_feature(list_of_dict)
-	X, y = extract_word_feature_and_label(list_of_dict, feature_words)

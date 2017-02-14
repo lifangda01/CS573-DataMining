@@ -8,12 +8,10 @@ parser.add_argument('trainingDataFilename',	help="Name of the training data csv 
 parser.add_argument('testDataFilename', help="Name of the training data csv file")
 args = parser.parse_args()
 
-def train_from_csv(csv_file_name):
+def train(feature_words, X, y):
 	'''
-		Given the training csv file, construct the NB knowledge matrix.
+		Train the NBC by populating the knowledge matrix.
 	'''
-	# Preprocess the csv file
-	feature_words, X, y = training_preprocess_from_csv(csv_file_name)
 	num_features = len(feature_words)
 	num_samples = len(y)
 	# Initialization with Laplace smoothing
@@ -21,15 +19,13 @@ def train_from_csv(csv_file_name):
 	# Training: populate the knowledge matrix
 	for i in range(num_samples):
 		M[range(num_features), y[i], X[:,i]] += 1
-	return feature_words, M
+	return M
 
-def test_from_csv(csv_file_name, feature_words, M):
+def test(M, X, y):
 	'''
-		Given the testing csv file, evaluate the NB classifier
+		Test the NBC and return the zero-one-loss.
 	'''
-	# Preprocess the csv file
-	X, y = testing_preprocess_from_csv(csv_file_name, feature_words)
-	num_features = len(feature_words)
+	num_features = M.shape[0]
 	num_samples = len(y)	
 	y_hat = zeros(num_samples).astype(int)
 	# Compute the probability for state of nature
@@ -45,18 +41,75 @@ def test_from_csv(csv_file_name, feature_words, M):
 	# Compute loss score
 	S = sum(abs(y - y_hat))*1.0 / num_samples
 	print "ZERO-ONE-LOSS %.4f" % S
-	return S
+	# Also return the baseline score
+	return S, sum(abs(y - argmax(bincount(y))))*1.0 / num_samples
 
-def evaluate_wrt_train_size():
-	pass
+def train_from_csv(csv_file_name, num_words=500):
+	'''
+		Given the training csv file, return the NB knowledge matrix.
+	'''
+	# Preprocess the csv file
+	feature_words, X, y = training_preprocess_from_csv(csv_file_name, num_words=num_words)
+	knowledge_matrix = train(feature_words, X, y)
+	return knowledge_matrix
 
-def evaluate_wrt_feature_size():
-	pass
+def test_from_csv(csv_file_name, feature_words, knowledge_matrix):
+	'''
+		Given the testing csv file, evaluate the NB classifier.
+		Return both the NBC loss and the baseline loss.
+	'''
+	# Preprocess the csv file
+	X, y = testing_preprocess_from_csv(csv_file_name, feature_words)
+	nbc_loss, baseline_loss = test(knowledge_matrix, X, y)
+	return nbc_loss, baseline_loss
 
+def evaluate_wrt_train_size(portions, num_repeat=10):
+	'''
+		Repeat the experiment each time on different portions.
+	'''
+	nbc_losses = zeros((num_repeat, len(portions)))
+	baseline_losses = zeros((num_repeat, len(portions)))
+	for i, p in enumerate(portions):
+		for j in range(num_repeat):
+			generate_train_and_test_files('yelp_data.csv', p)
+			feature_words, knowledge_matrix = train_from_csv('train-set.dat')
+			nbc_losses[j,i], baseline_losses[j,i] = test_from_csv('test-set.dat', feature_words, knowledge_matrix)
+	# Save the results
+	savetxt('nbc_losses_q3.dat', nbc_losses), savetxt('baseline_losses_q3.dat', baseline_losses)
+	# Analysis and plot
+	nbc_means, nbc_stds = mean(nbc_losses, axis=0), std(nbc_losses, axis=0)
+	baseline_means, baseline_stds = mean(baseline_losses, axis=0), std(baseline_losses, axis=0)
+	figure()
+	errorbar(portions,nbc_means,nbc_stds,c='r',marker='o')
+	errorbar(portions,baseline_means,baseline_stds,c='#eeefff',marker='o')
+	show()
+
+def evaluate_wrt_feature_size(words, num_repeat=10):
+	'''
+		Repeat the experiment each time on different portions.
+	'''
+	nbc_losses = zeros((num_repeat, len(words)))
+	baseline_losses = zeros((num_repeat, len(words)))
+	for i, w in enumerate(words):
+		for j in range(num_repeat):
+			generate_train_and_test_files('yelp_data.csv', 0.5)
+			feature_words, knowledge_matrix = train_from_csv('train-set.dat', w)
+			nbc_losses[j,i], baseline_losses[j,i] = test_from_csv('test-set.dat', feature_words, knowledge_matrix)
+	# Save the results
+	savetxt('nbc_losses_q4.dat', nbc_losses), savetxt('baseline_losses_q4.dat', baseline_losses)
+	# Analysis and plot
+	nbc_means, nbc_stds = mean(nbc_losses, axis=0), std(nbc_losses, axis=0)
+	baseline_means, baseline_stds = mean(baseline_losses, axis=0), std(baseline_losses, axis=0)
+	figure()
+	errorbar(words,nbc_means,nbc_stds,c='r',marker='o')
+	errorbar(words,baseline_means,baseline_stds,c='#eeefff',marker='o')
+	show()
+	
 def main():
-	generate_train_and_test_files('yelp_data.csv', 0.8)
-	feature_words, knowledge_matrix = train_from_csv(args.trainingDataFilename)
-	loss = test_from_csv(args.testDataFilename, feature_words, knowledge_matrix)
+	# generate_train_and_test_files('yelp_data.csv', 0.8)
+	# feature_words, knowledge_matrix = train_from_csv(args.trainingDataFilename)
+	# loss = test_from_csv(args.testDataFilename, feature_words, knowledge_matrix)
+	evaluate_wrt_feature_size([0.01, 0.05], num_repeat=2)
 
 if __name__ == '__main__':
 	main()
