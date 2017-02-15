@@ -1,4 +1,5 @@
 # CS573-DataMining-HW2-FangdaLi
+### Python 2.7
 ### Command Line Usage:
 ```
 usage: nbc.py [-h] trainingDataFilename testDataFilename
