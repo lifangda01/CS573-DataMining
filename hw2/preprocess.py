@@ -72,10 +72,10 @@ def construct_word_feature(list_of_dict, num_words):
 	'''
 	hist = dict_to_hist(list_of_dict)
 	# A list of tuples (word, count)
-	top_N = hist.most_common(num_words+100)
+	top_N = hist.most_common(int(num_words+100))
 	# Print the top 10 words in the feature
 	for i, (w,_) in enumerate(top_N[100:110]):
-		print "WORD%d %s" % (i+1, w)
+		print "WORD%d %s" % (i+1, w) , _
 	# Return top 101-600
 	return [w for w,_ in top_N[100:]]
 

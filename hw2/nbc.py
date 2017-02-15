@@ -51,7 +51,7 @@ def train_from_csv(csv_file_name, num_words=500):
 	# Preprocess the csv file
 	feature_words, X, y = training_preprocess_from_csv(csv_file_name, num_words=num_words)
 	knowledge_matrix = train(feature_words, X, y)
-	return knowledge_matrix
+	return feature_words, knowledge_matrix
 
 def test_from_csv(csv_file_name, feature_words, knowledge_matrix):
 	'''
@@ -76,12 +76,19 @@ def evaluate_wrt_train_size(portions, num_repeat=10):
 			nbc_losses[j,i], baseline_losses[j,i] = test_from_csv('test-set.dat', feature_words, knowledge_matrix)
 	# Save the results
 	savetxt('nbc_losses_q3.dat', nbc_losses), savetxt('baseline_losses_q3.dat', baseline_losses)
+	# Load back in case of need
+	# nbc_losses , baseline_losses = loadtxt('nbc_losses_q3.dat'), loadtxt('baseline_losses_q3.dat')
 	# Analysis and plot
 	nbc_means, nbc_stds = mean(nbc_losses, axis=0), std(nbc_losses, axis=0)
 	baseline_means, baseline_stds = mean(baseline_losses, axis=0), std(baseline_losses, axis=0)
-	figure()
-	errorbar(portions,nbc_means,nbc_stds,c='r',marker='o')
-	errorbar(portions,baseline_means,baseline_stds,c='#eeefff',marker='o')
+	fig = figure()
+	ax = fig.add_subplot(111)
+	ax.errorbar(portions,nbc_means,nbc_stds,c='r',marker='o', label='NBC')
+	ax.errorbar(portions,baseline_means,baseline_stds,c='g',marker='o', label='Baseline')
+	ax.legend(loc='right')
+	ax.set_xlabel('Portion')
+	ax.set_ylabel('Loss')
+	ax.set_title('Training Set Size v.s. Zero-one-loss')
 	show()
 
 def evaluate_wrt_feature_size(words, num_repeat=10):
@@ -100,16 +107,23 @@ def evaluate_wrt_feature_size(words, num_repeat=10):
 	# Analysis and plot
 	nbc_means, nbc_stds = mean(nbc_losses, axis=0), std(nbc_losses, axis=0)
 	baseline_means, baseline_stds = mean(baseline_losses, axis=0), std(baseline_losses, axis=0)
-	figure()
-	errorbar(words,nbc_means,nbc_stds,c='r',marker='o')
-	errorbar(words,baseline_means,baseline_stds,c='#eeefff',marker='o')
+	fig = figure()
+	ax = fig.add_subplot(111)
+	ax.errorbar(words,nbc_means,nbc_stds,c='r',marker='o', label='NBC')
+	ax.errorbar(words,baseline_means,baseline_stds,c='g',marker='o', label='Baseline')
+	ax.legend(loc='right')
+	ax.set_xscale('log')
+	ax.set_xlabel('# words')
+	ax.set_ylabel('Loss')
+	ax.set_title('Feature Size v.s. Zero-one-loss')
 	show()
 	
 def main():
 	# generate_train_and_test_files('yelp_data.csv', 0.8)
 	# feature_words, knowledge_matrix = train_from_csv(args.trainingDataFilename)
 	# loss = test_from_csv(args.testDataFilename, feature_words, knowledge_matrix)
-	evaluate_wrt_feature_size([0.01, 0.05], num_repeat=2)
+	# evaluate_wrt_train_size([0.01, 0.05, 0.10, 0.20, 0.50, 0.90], num_repeat=10)
+	evaluate_wrt_feature_size([10, 50, 250, 500, 1000, 4000], num_repeat=10)
 
 if __name__ == '__main__':
 	main()
