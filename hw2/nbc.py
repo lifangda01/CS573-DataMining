@@ -119,11 +119,11 @@ def evaluate_wrt_feature_size(words, num_repeat=10):
 	show()
 	
 def main():
-	# generate_train_and_test_files('yelp_data.csv', 0.8)
-	# feature_words, knowledge_matrix = train_from_csv(args.trainingDataFilename)
-	# loss = test_from_csv(args.testDataFilename, feature_words, knowledge_matrix)
+	# generate_train_and_test_files('yelp_data.csv', 0.5)
+	feature_words, knowledge_matrix = train_from_csv(args.trainingDataFilename)
+	loss = test_from_csv(args.testDataFilename, feature_words, knowledge_matrix)
 	# evaluate_wrt_train_size([0.01, 0.05, 0.10, 0.20, 0.50, 0.90], num_repeat=10)
-	evaluate_wrt_feature_size([10, 50, 250, 500, 1000, 4000], num_repeat=10)
+	# evaluate_wrt_feature_size([10, 50, 250, 500, 1000, 4000], num_repeat=10)
 
 if __name__ == '__main__':
 	main()
