@@ -1,6 +1,7 @@
 from pylab import *
-from preprocess import *
 import argparse
+from preprocess import *
+from lr import LogisticRegression
 
 parser = argparse.ArgumentParser(description='Train and test a Naive Bayes Classifier.')
 # Required arguments
@@ -9,8 +10,15 @@ parser.add_argument('testDataFilename', help="Name of the test data csv file")
 parser.add_argument('modelIdx', help="Model to use: 0 for NBC, 1 for LR and 2 for SVM")
 args = parser.parse_args()
 
+def evaluate_lr():
+	lr = LogisticRegression()
+	lr.train_from_csv('train-set.dat')
+	lr.test_from_csv('test-set.dat')
+
 def main():
-	print args
+	# generate_train_and_test_files_cv('yelp_data.csv', 10)
+	generate_train_and_test_files('yelp_data.csv', 0.5)
+	evaluate_lr()
 
 if __name__ == '__main__':
 	main()

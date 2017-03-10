@@ -42,6 +42,20 @@ def generate_train_and_test_files(csv_file_name, train_percentage):
 		for i in rand_ind[train_num:]:
 			f.write(lines[i])
 
+def generate_train_and_test_files_cv(csv_file_name, num_folds):
+	'''
+		Read a csv file and divide into K folds.
+	'''
+	with open(csv_file_name, 'rU') as f:
+		lines = f.readlines()
+	total_num = len(lines)
+	set_size = int(total_num / num_folds)
+	rand_ind = permutation(total_num)
+	for s in range(num_folds):
+		with open('cv%d.dat'%(s), 'w') as f:
+			for i in rand_ind[set_size*s:set_size*(s+1)]:
+				f.write(lines[i])
+
 def format_dict(list_of_dict):
 	'''
 		Return a formated version of the list of dictionaries.
@@ -74,8 +88,8 @@ def construct_word_feature(list_of_dict, num_words):
 	# A list of tuples (word, count)
 	top_N = hist.most_common(int(num_words+100))
 	# Print the top 10 words in the feature
-	for i, (w,_) in enumerate(top_N[100:110]):
-		print "WORD%d %s" % (i+1, w)
+	# for i, (w,_) in enumerate(top_N[100:110]):
+	# 	print "WORD%d %s" % (i+1, w)
 	# Return top 101-600
 	return [w for w,_ in top_N[100:]]
 
@@ -86,9 +100,9 @@ def extract_word_feature_and_label(list_of_dict, feature_words):
 	'''
 	num_reviews = len(list_of_dict)
 	num_features = len(feature_words)
-	# Feature vectors
+	# Feature vectors, 0 or 1
 	X = zeros((num_features, num_reviews)).astype(int)
-	# Ground-truth labels
+	# Ground-truth labels, 0 or 1
 	y = zeros(num_reviews).astype(int)
 	for i, entry in enumerate(list_of_dict):
 		y[i] = entry['classLabel']
