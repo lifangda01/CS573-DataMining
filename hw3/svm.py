@@ -40,9 +40,12 @@ class SupportVectorMachine(object):
 			# Make predictions using current weight
 			y_hat = dot(self.w, X)
 			# Calculate the gradients for weights
-			dw = dot( y - y_hat, X.T) - self.w * self.reg_lambda
+			yy_hat = dot( y , y_hat)
+			dh = dot( y , X.T ) # Hinge loss gradient
+			dh[yy_hat >= 1] = 0
+			dw = ( self.reg_lambda * self.w - dh ) / num_samples
 			# Gradient descent
-			self.w += dw * self.gd_eta
+			self.w -= dw * self.gd_eta
 			# Check update amount
 			curr_weight_norm = norm(self.w)
 			i +=1
@@ -52,8 +55,6 @@ class SupportVectorMachine(object):
 			Test the LR model on a CSV file and return 0/1 loss.
 		'''
 		X, y = testing_preprocess_from_csv(csv_file_name, self.feature_words)
-		# Since SVM requires labels to be -1 and 1, rectify the labels
-		y[y==0] = -1
 		return self.test(X, y)
 
 	def test(self, X, y):
@@ -62,9 +63,9 @@ class SupportVectorMachine(object):
 		'''
 		num_features, num_samples = X.shape
 		X = vstack((ones(num_samples), X))
-		y_hat = 1.0 / (1 + exp( -dot(self.w, X) ))
+		y_hat = dot(self.w, X)
 		preds = zeros(num_samples)
-		preds[y_hat >= 0.5] = 1.0
+		preds[y_hat >= 0] = 1.0
 		# Compute loss score
 		S = sum(abs(y - preds))*1.0 / num_samples
 		print "ZERO-ONE-LOSS-LR %.4f" % S
