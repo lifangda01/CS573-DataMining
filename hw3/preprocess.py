@@ -93,10 +93,11 @@ def construct_word_feature(list_of_dict, num_words):
 	# Return top 101-600
 	return [w for w,_ in top_N[100:]]
 
-def extract_word_feature_and_label(list_of_dict, feature_words):
+def extract_word_feature_and_label(list_of_dict, feature_words, new_feature=False):
 	'''
 		Given the reviews in a list of dictionaries and a list of feature words,
 		return a numpy array of feature vectors (num_features by num_reviews) with only 1 and 0.
+		Optionally, return feature vectors with 0, 1 and 2
 	'''
 	num_reviews = len(list_of_dict)
 	num_features = len(feature_words)
@@ -106,8 +107,15 @@ def extract_word_feature_and_label(list_of_dict, feature_words):
 	y = zeros(num_reviews).astype(int)
 	for i, entry in enumerate(list_of_dict):
 		y[i] = entry['classLabel']
-		mask = [word in entry['reviewText'].split(' ') for word in feature_words]
-		X[array(mask), i] = 1
+		if new_feature:
+			counts = dict(Counter(entry['reviewText'].split(' ')))
+			mask = [word in counts and counts[word] == 1 for word in feature_words]
+			X[array(mask), i] = 1
+			mask = [word in counts and counts[word] > 1 for word in feature_words]
+			X[array(mask), i] = 2	
+		else:
+			mask = [word in entry['reviewText'].split(' ') for word in feature_words]
+			X[array(mask), i] = 1
 	return X, y
 
 def training_preprocess_from_csv(csv_file_name, num_words):

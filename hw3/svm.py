@@ -18,7 +18,7 @@ class SupportVectorMachine(object):
 		'''
 			Train the LR model from a CSV file.
 		'''
-		self.feature_words, X, y = training_preprocess_from_csv(csv_file_name, 4000)
+		self.feature_words, X, y = training_preprocess_from_csv(csv_file_name, self.num_words)
 		self.train(X, y)
 
 	def train(self, X, y):
@@ -39,10 +39,13 @@ class SupportVectorMachine(object):
 			# Make predictions using current weight
 			y_hat = dot(self.w, X)
 			# Calculate the gradients for weights
-			yy_hat = dot( y , y_hat)
-			dh = dot( y , X.T ) # Hinge loss gradient
-			dh[yy_hat >= 1] = 0
-			dw = ( self.reg_lambda * self.w - dh ) / num_samples
+			# yy_hat = dot( y , y_hat)
+			yy_hat = multiply( y , y_hat) # Mask per sample
+			# dh = - dot( y , X.T ) # Hinge loss gradient
+			dh = - multiply( X , y ) # Hinge loss gradient per sample
+			dh[:, yy_hat >= 1] = 0
+			# dw = ( self.reg_lambda * self.w + dh ) / num_samples
+			dw = self.reg_lambda * self.w + sum(dh, axis=1) / num_samples
 			# Gradient descent
 			self.w -= dw * self.gd_eta
 			i +=1

@@ -18,7 +18,7 @@ class LogisticRegression(object):
 		'''
 			Train the LR model from a CSV file.
 		'''
-		self.feature_words, X, y = training_preprocess_from_csv(csv_file_name, 4000)
+		self.feature_words, X, y = training_preprocess_from_csv(csv_file_name, self.num_words)
 		self.train(X, y)
 
 	def train(self, X, y):

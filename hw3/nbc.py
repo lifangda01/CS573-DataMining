@@ -1,14 +1,18 @@
 from pylab import *
 from preprocess import *
 
-def nbc_train(feature_words, X, y):
+def nbc_train(feature_words, X, y, new_feature=False):
 	'''
 		Train the NBC by populating the knowledge matrix.
 	'''
 	num_features = len(feature_words)
 	num_samples = len(y)
+	if new_feature: 
+		num_feature_values = 3
+	else:
+		num_feature_values = 2
 	# Initialization with Laplace smoothing
-	M = ones((num_features,2,2))
+	M = ones((num_features,2,num_feature_values)) # #features, #classes, #feature values
 	# Training: populate the knowledge matrix
 	for i in range(num_samples):
 		M[range(num_features), y[i], X[:,i]] += 1
@@ -21,7 +25,7 @@ def nbc_test(M, X, y):
 	num_features = M.shape[0]
 	num_samples = len(y)	
 	y_hat = zeros(num_samples).astype(int)
-	# Compute the probability for state of nature
+	# Compute the probability for state of nature (priors)
 	P_theta = sum(sum(M, axis=0), axis=1).astype(float) / sum(M)
 	# Normalization along axis 2
 	M /= sum(M, axis=2)[:,:,None]
