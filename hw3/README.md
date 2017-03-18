@@ -1,4 +1,5 @@
 # CS573-DataMining-HW3-FangdaLi
+### I have used all 4 of the free late submission days for this assignment.
 ### Python 2.7
 ### Command Line Usage:
 ```
