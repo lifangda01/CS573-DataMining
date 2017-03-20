@@ -18,7 +18,7 @@ class LogisticRegression(object):
 		'''
 			Train the LR model from a CSV file.
 		'''
-		self.feature_words, X, y = training_preprocess_from_csv(csv_file_name, 4000)
+		self.feature_words, X, y = training_preprocess_from_csv(csv_file_name, self.num_words)
 		self.train(X, y)
 
 	def train(self, X, y):
@@ -30,19 +30,16 @@ class LogisticRegression(object):
 		self.w = zeros(num_features+1)
 		X = vstack((ones(num_samples), X))
 		i = 1
-		weight_update = 1
-		last_weight_norm, curr_weight_norm = 0, 1
+		last_weights = self.w+1
 		# Main gradient ascent loop
-		while i <= self.max_iter and abs(last_weight_norm - curr_weight_norm) >= self.min_update:
-			last_weight_norm = curr_weight_norm
+		while i <= self.max_iter and norm(last_weights - self.w) >= self.min_update:
+			last_weights = copy(self.w)
 			# Make predictions using current weight
 			y_hat = 1.0 / (1 + exp( -dot(self.w, X) ))
 			# Calculate the gradients for weights
 			dw = dot( y - y_hat, X.T) - self.w * self.reg_lambda
 			# Gradient ascent
 			self.w += dw * self.gd_eta
-			# Check update amount
-			curr_weight_norm = norm(self.w)
 			i +=1
 
 	def test_from_csv(self, csv_file_name):
