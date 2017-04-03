@@ -5,7 +5,7 @@ _gini = lambda y: 1 - sum(( 1.0*unique(y, return_counts=True)[1] / size(y) )**2)
 
 class _Node(object):
 	"""Container for a node in DecisionTree"""
-	def __init__(self, feature_index=None, label=None):
+	def __init__(self, feature_index=0, label=None):
 		super(_Node, self).__init__()
 		self.left = None
 		self.right = None
@@ -14,10 +14,10 @@ class _Node(object):
 
 class DecisionTree(object):
 	"""DecisionTree model"""
-	def __init__(self, depth_limit=10, sample_limit=10, rf_tree=False):
+	def __init__(self, max_depth=10, min_samples_split=10, rf_tree=False):
 		super(DecisionTree, self).__init__()
-		self.depth_limit = depth_limit
-		self.sample_limit = sample_limit
+		self.max_depth = max_depth
+		self.min_samples_split = min_samples_split
 		self.rf_tree = rf_tree
 		self.root = None
 		self.feature_words = None
@@ -74,17 +74,21 @@ class DecisionTree(object):
 			Private function for finding the best split for the current node.
 		'''
 		# Recursion-termination condition
-		if depth > self.depth_limit or size(y) < self.sample_limit or size(unique(y)) == 1:
+		if size(unique(y)) == 1:
+			return _Node(label=y[0])
+		if depth > self.max_depth or size(y) < self.min_samples_split:
 			return None
 		# Gini index before split (optional)
 		gini_before = _gini(y)
 		# Gini index for all possible splits
+		# See who is the best
 		if self.rf_tree:
-			gini_gains = array([ self._get_gini_gain(X, y, k, gini_before) for k in permutation(X.shape[0])[:int(sqrt(X.shape[0]))] ])
+			perm = permutation(X.shape[0])
+			gini_gains = array([ self._get_gini_gain(X, y, k, gini_before) for k in perm[:int(sqrt(X.shape[0]))] ])
+			k_best = perm[ argmax(gini_gains) ]
 		else:
 			gini_gains = array([ self._get_gini_gain(X, y, k, gini_before) for k in range(X.shape[0]) ])
-		# See who is the best
-		k_best = argmax(gini_gains)
+			k_best = argmax(gini_gains)
 		i_neg = X[k_best] == 0
 		i_pos = X[k_best] > 0
 		# print depth, unique(y, return_counts=True), k_best, gini_gains[k_best:k_best+3]
@@ -112,9 +116,9 @@ class DecisionTree(object):
 
 class BaggedDecisionTrees(object):
 	"""Bag of decision trees."""
-	def __init__(self, num_trees=50):
+	def __init__(self, n_estimators=50):
 		super(BaggedDecisionTrees, self).__init__()
-		self.num_trees = num_trees
+		self.n_estimators = n_estimators
 		self.trees = []
 		
 	def train_from_csv(self, csv_file_name, num_words=1000):
@@ -128,7 +132,7 @@ class BaggedDecisionTrees(object):
 		'''
 			Train the BDT model from data matrix and target vector.
 		'''
-		for i in range(self.num_trees):
+		for i in range(self.n_estimators):
 			dt = DecisionTree()
 			# Sample with replacement
 			indices = randint(0, X.shape[1], X.shape[1])
@@ -158,7 +162,30 @@ class BaggedDecisionTrees(object):
 		'''
 		# Majority vote
 		preds = array([ dt.predict(x) for dt in self.trees])
-		return argmax( unique(preds, return_counts=True)[1] )
+		return self._get_majority_label(preds)
+
+	def _get_majority_label(self, y):
+		'''
+			Return the majority label, invariant to the number of different labels.
+		'''
+		labels, counts = unique(y, return_counts=True)
+		return labels[argmax(counts)]
+			
+# class BoostedDecisionTrees(BaggedDecisionTrees):
+# 	"""BoostedDecisionTrees"""
+# 	def train(self, X, y):
+# 		'''
+# 			Train the BDT model from data matrix and target vector.
+# 		'''
+# 		# Initialize the sample weights
+# 		D = ones(X.shape[1])
+# 		for i in range(self.n_estimators):
+# 			dt = DecisionTree()
+# 			D = D / sum(D)
+# 			# Sample with replacement
+# 			indices = randint(0, X.shape[1], X.shape[1])
+# 			dt.train(X[:,indices], y[indices])
+# 			self.trees.append(dt)
 
 class RandomForest(BaggedDecisionTrees):
 	"""RandomForest"""
@@ -166,7 +193,7 @@ class RandomForest(BaggedDecisionTrees):
 		'''
 			Train the RF model from data matrix and target vector.
 		'''
-		for i in range(self.num_trees):
+		for i in range(self.n_estimators):
 			dt = DecisionTree(rf_tree=True)
 			# Sample with replacement
 			indices = randint(0, X.shape[1], X.shape[1])
