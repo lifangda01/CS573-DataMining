@@ -13,11 +13,11 @@ class SupportVectorMachine(object):
 		self.w = None
 		self.feature_words = None
 
-	def train_from_csv(self, csv_file_name, num_words=4000):
+	def train_from_csv(self, csv_file_name, num_words=1000):
 		'''
 			Train the LR model from a CSV file.
 		'''
-		self.feature_words, X, y = training_preprocess_from_csv(csv_file_name, self.num_words)
+		self.feature_words, X, y = training_preprocess_from_csv(csv_file_name, num_words)
 		self.train(X, y)
 
 	def train(self, X, y):

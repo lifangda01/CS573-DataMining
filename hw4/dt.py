@@ -14,10 +14,11 @@ class _Node(object):
 
 class DecisionTree(object):
 	"""DecisionTree model"""
-	def __init__(self, depth_limit=10, sample_limit=10):
+	def __init__(self, depth_limit=10, sample_limit=10, rf_tree=False):
 		super(DecisionTree, self).__init__()
 		self.depth_limit = depth_limit
 		self.sample_limit = sample_limit
+		self.rf_tree = rf_tree
 		self.root = None
 		self.feature_words = None
 
@@ -46,11 +47,27 @@ class DecisionTree(object):
 		'''
 			Test the DT model from data matrix and target vector.
 		'''
-		preds = array([ self._get_prediction(X[:,i]) for i in range(X.shape[1]) ])
+		preds = array([ self.predict(X[:,i]) for i in range(X.shape[1]) ])
 		# Compute loss score
 		S = sum(abs(y - preds))*1.0 / size(y)
 		print "ZERO-ONE-LOSS-DT %.4f" % S
 		return S
+
+	def predict(self, x):
+		'''
+			Traverse the decision tree using feature vector x and return the predicted label.
+		'''
+		curr = self.root
+		label = None
+		# While not leaf node
+		while not curr == None:
+			label = curr.label
+			if x[curr.feature_index] > 0:
+				next = curr.right
+			else:
+				next = curr.left
+			curr = next
+		return label
 
 	def _find_best_split(self, X, y, curr, depth):
 		'''
@@ -62,7 +79,10 @@ class DecisionTree(object):
 		# Gini index before split (optional)
 		gini_before = _gini(y)
 		# Gini index for all possible splits
-		gini_gains = array([ self._get_gini_gain(X, y, k, gini_before) for k in range(X.shape[0]) ])
+		if self.rf_tree:
+			gini_gains = array([ self._get_gini_gain(X, y, k, gini_before) for k in permutation(X.shape[0])[:int(sqrt(X.shape[0]))] ])
+		else:
+			gini_gains = array([ self._get_gini_gain(X, y, k, gini_before) for k in range(X.shape[0]) ])
 		# See who is the best
 		k_best = argmax(gini_gains)
 		i_neg = X[k_best] == 0
@@ -90,18 +110,75 @@ class DecisionTree(object):
 		y_neg = y[ X[k] == 0 ]
 		return gini_before - (size(y_pos)*_gini(y_pos) + size(y_neg)*_gini(y_neg)) / size(y)
 
-	def _get_prediction(self, x):
+class BaggedDecisionTrees(object):
+	"""Bag of decision trees."""
+	def __init__(self, num_trees=50):
+		super(BaggedDecisionTrees, self).__init__()
+		self.num_trees = num_trees
+		self.trees = []
+		
+	def train_from_csv(self, csv_file_name, num_words=1000):
 		'''
-			Traverse the decision tree using feature vector x and return the predicted label.
+			Train the BDT model from a CSV file.
 		'''
-		curr = self.root
-		label = None
-		# While not leaf node
-		while not curr == None:
-			label = curr.label
-			if x[curr.feature_index] > 0:
-				next = curr.right
-			else:
-				next = curr.left
-			curr = next
-		return label
+		self.feature_words, X, y = training_preprocess_from_csv(csv_file_name, num_words)
+		self.train(X, y)
+
+	def train(self, X, y):
+		'''
+			Train the BDT model from data matrix and target vector.
+		'''
+		for i in range(self.num_trees):
+			dt = DecisionTree()
+			# Sample with replacement
+			indices = randint(0, X.shape[1], X.shape[1])
+			dt.train(X[:,indices], y[indices])
+			self.trees.append(dt)
+
+	def test_from_csv(self, csv_file_name):
+		'''
+			Test the BDT model on a CSV file and return 0/1 loss.
+		'''
+		X, y = testing_preprocess_from_csv(csv_file_name, self.feature_words)
+		return self.test(X, y)
+
+	def test(self, X, y):
+		'''
+			Test the BDT model from data matrix and target vector.
+		'''
+		preds = array([ self.predict(X[:,i]) for i in range(X.shape[1]) ])
+		# Compute loss score
+		S = sum(abs(y - preds))*1.0 / size(y)
+		print "ZERO-ONE-LOSS-BT %.4f" % S
+		return S
+
+	def predict(self, x):
+		'''
+			Traverse the decision trees using feature vector x and return the predicted label.
+		'''
+		# Majority vote
+		preds = array([ dt.predict(x) for dt in self.trees])
+		return argmax( unique(preds, return_counts=True)[1] )
+
+class RandomForest(BaggedDecisionTrees):
+	"""RandomForest"""
+	def train(self, X, y):
+		'''
+			Train the RF model from data matrix and target vector.
+		'''
+		for i in range(self.num_trees):
+			dt = DecisionTree(rf_tree=True)
+			# Sample with replacement
+			indices = randint(0, X.shape[1], X.shape[1])
+			dt.train(X[:,indices], y[indices])
+			self.trees.append(dt)
+
+	def test(self, X, y):
+		'''
+			Test the RF model from data matrix and target vector.
+		'''
+		preds = array([ self.predict(X[:,i]) for i in range(X.shape[1]) ])
+		# Compute loss score
+		S = sum(abs(y - preds))*1.0 / size(y)
+		print "ZERO-ONE-LOSS-RF %.4f" % S
+		return S
