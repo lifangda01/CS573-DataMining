@@ -82,6 +82,7 @@ class DecisionTree(object):
 		gini_before = _gini(y)
 		# Gini index for all possible splits
 		# See who is the best
+		# FIXME: unique features?
 		if self.rf_tree:
 			perm = permutation(X.shape[0])
 			gini_gains = array([ self._get_gini_gain(X, y, k, gini_before) for k in perm[:int(sqrt(X.shape[0]))] ])
@@ -116,9 +117,10 @@ class DecisionTree(object):
 
 class BaggedDecisionTrees(object):
 	"""Bag of decision trees."""
-	def __init__(self, n_estimators=50):
+	def __init__(self, max_depth=10, n_estimators=50):
 		super(BaggedDecisionTrees, self).__init__()
 		self.n_estimators = n_estimators
+		self.max_depth = max_depth
 		self.trees = []
 		
 	def train_from_csv(self, csv_file_name, num_words=1000):
@@ -133,7 +135,7 @@ class BaggedDecisionTrees(object):
 			Train the BDT model from data matrix and target vector.
 		'''
 		for i in range(self.n_estimators):
-			dt = DecisionTree()
+			dt = DecisionTree(max_depth=self.max_depth)
 			# Sample with replacement
 			indices = randint(0, X.shape[1], X.shape[1])
 			dt.train(X[:,indices], y[indices])
@@ -194,7 +196,7 @@ class RandomForest(BaggedDecisionTrees):
 			Train the RF model from data matrix and target vector.
 		'''
 		for i in range(self.n_estimators):
-			dt = DecisionTree(rf_tree=True)
+			dt = DecisionTree(max_depth=self.max_depth, rf_tree=True)
 			# Sample with replacement
 			indices = randint(0, X.shape[1], X.shape[1])
 			dt.train(X[:,indices], y[indices])
