@@ -1,5 +1,5 @@
 from preprocess import *
-from dt import DecisionTree, BaggedDecisionTrees, RandomForest
+from dt import DecisionTree, BaggedDecisionTrees, RandomForest, BoostedDecisionTrees
 from svm import SupportVectorMachine
 from sklearn.tree import DecisionTreeClassifier as skDecisionTree
 from sklearn.ensemble import RandomForestClassifier as skRandomForest
@@ -44,6 +44,11 @@ def cross_validate(csv_file_name, losses_file_name, models,
 				bdt = BaggedDecisionTrees(max_depth=maxdep, n_estimators=ntrees)
 				bdt.train(training_X, training_y)
 				losses[models.index('BDT'),i,j] = bdt.test(testing_X, testing_y)
+			# BODT
+			if 'BODT' in models:
+				bodt = BoostedDecisionTrees(max_depth=maxdep, n_estimators=ntrees)
+				bodt.train(training_X, training_y)
+				losses[models.index('BODT'),i,j] = bodt.test(testing_X, testing_y)
 			# RF
 			if 'RF' in models:
 				rf = RandomForest(max_depth=maxdep, n_estimators=ntrees)
@@ -87,7 +92,7 @@ def analysis_1(models, tssp, num_words, max_depth, n_estimators, debug=False):
 	# Plot
 	fig = figure()
 	ax = fig.add_subplot(111)
-	for i, model, color in [(0,'DT','r'), (1,'BDT','g'), (2,'RF','b'), (3,'SVM','c')]:
+	for i, model, color in [(0,'DT','r'), (1,'BDT','g'), (2,'RF','b'), (3,'SVM','c'), (4,'BODT','k')]:
 		ax.errorbar(tssp,means[i],sterrs[i],c=color,marker='o', label=model)
 	if debug:
 		sklosses = load('debug_' + losses_file_name)

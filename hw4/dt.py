@@ -173,21 +173,61 @@ class BaggedDecisionTrees(object):
 		labels, counts = unique(y, return_counts=True)
 		return labels[argmax(counts)]
 			
-# class BoostedDecisionTrees(BaggedDecisionTrees):
-# 	"""BoostedDecisionTrees"""
-# 	def train(self, X, y):
-# 		'''
-# 			Train the BDT model from data matrix and target vector.
-# 		'''
-# 		# Initialize the sample weights
-# 		D = ones(X.shape[1])
-# 		for i in range(self.n_estimators):
-# 			dt = DecisionTree()
-# 			D = D / sum(D)
-# 			# Sample with replacement
-# 			indices = randint(0, X.shape[1], X.shape[1])
-# 			dt.train(X[:,indices], y[indices])
-# 			self.trees.append(dt)
+class BoostedDecisionTrees(BaggedDecisionTrees):
+	"""BoostedDecisionTrees using AdaBoost"""
+	def __init__(self, max_depth=10, n_estimators=50):
+		super(BaggedDecisionTrees, self).__init__()
+		self.n_estimators = n_estimators
+		self.max_depth = max_depth
+		self.trees = []
+		self.W = zeros(n_estimators)
+
+	def train(self, X, y):
+		'''
+			Train the BDT model from data matrix and target vector.
+		'''
+		# Initialize the sample weights
+		D = ones(X.shape[1])
+		yp = ones(X.shape[1])
+		yp[y == 0] = -1
+		for k in range(self.n_estimators):
+			# Train a weak classifier
+			dt = DecisionTree(max_depth=self.max_depth)
+			D = D / sum(D)
+			# Sample with replacement
+			indices = randint(0, X.shape[1], X.shape[1])
+			dt.train(X[:,indices], y[indices])
+			# Get the predictions
+			preds = array([ dt.predict(X[:,i]) for i in range(X.shape[1]) ])
+			preds[preds == 0] = -1
+			# Update the weights
+			# http://cs.nyu.edu/~dsontag/courses/ml12/slides/lecture13.pdf
+			epsilon = 0.5 - 0.5 * dot(D, preds*yp)
+			alpha = 0.5 * log((1-epsilon) / epsilon)
+			D = multiply(D, -alpha*preds*yp)
+			# Remember the confidence value
+			self.W[k] = alpha
+			self.trees.append(dt)
+
+	def test(self, X, y):
+		'''
+			Test the BODT model from data matrix and target vector.
+		'''
+		print self.W
+		preds = array([ self.predict(X[:,i]) for i in range(X.shape[1]) ])
+		# Compute loss score
+		S = sum(abs(y - preds))*1.0 / size(y)
+		print "ZERO-ONE-LOSS-BOT %.4f" % S
+		return S
+
+	def predict(self, x):
+		'''
+			Traverse the decision trees using feature vector x and return the predicted label.
+		'''
+		# Weighted vote
+		preds = array([ dt.predict(x) for dt in self.trees])
+		preds[preds == 0] = -1
+		return int(dot(self.W, preds) >= 0)
 
 class RandomForest(BaggedDecisionTrees):
 	"""RandomForest"""
