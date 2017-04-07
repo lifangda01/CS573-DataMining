@@ -12,14 +12,15 @@ def cross_validate(csv_file_name, losses_file_name, models,
 	'''
 	total_num = 2000
 	lists_of_dict = []
-	losses = zeros((len(models), len(tssp), 10)) # #models, #tss, #folds
-	sklosses = zeros((2, len(tssp), 10))
+	setups = [(p,w,d,t) for p in tssp for w in num_words for d in max_depth for t in n_estimators]
+	losses = zeros((len(models), len(setups), 10)) # #models, #cases, #folds
+	sklosses = zeros((2, len(setups), 10))
 	generate_train_and_test_files_cv(csv_file_name, 10)
 	# Generate temp CV files
 	for i in range(10):
 		lists_of_dict.append( csv_to_dict('cv%d.dat'%(i)) )
 	i = 0
-	for prop, nwords, maxdep, ntrees in [(p,w,d,t) for p in tssp for w in num_words for d in max_depth for t in n_estimators]:
+	for prop, nwords, maxdep, ntrees in setups:
 		for j in range(10):
 			# Contruct train set
 			training_lists_of_dict = lists_of_dict[:j] + lists_of_dict[j+1:]

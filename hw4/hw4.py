@@ -1,7 +1,7 @@
 import argparse
 from dt import DecisionTree, BaggedDecisionTrees, RandomForest, BoostedDecisionTrees
 from svm import SupportVectorMachine
-from analysis import analysis_1
+from analysis import analysis_1, analysis_2, analysis_3, analysis_4
 
 parser = argparse.ArgumentParser(description='Train and test a LR or SVM Classifier.')
 # Required arguments
@@ -32,8 +32,6 @@ def main():
 		num_words = [1000]
 		max_depth = [10]
 		n_estimators = [50]
-		models = ['BODT']
-		tssp = [0.025]
 		analysis_1(models, tssp, num_words, max_depth, n_estimators, debug=True)
 		return
 	elif args.modelIdx == 'A2':
