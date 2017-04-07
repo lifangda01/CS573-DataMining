@@ -188,7 +188,7 @@ class BoostedDecisionTrees(BaggedDecisionTrees):
 		'''
 		# Initialize the sample weights
 		D = ones(X.shape[1])
-		yp = ones(X.shape[1])
+		yp = copy(y)
 		yp[y == 0] = -1
 		for k in range(self.n_estimators):
 			# Train a weak classifier
@@ -204,7 +204,7 @@ class BoostedDecisionTrees(BaggedDecisionTrees):
 			# http://cs.nyu.edu/~dsontag/courses/ml12/slides/lecture13.pdf
 			epsilon = 0.5 - 0.5 * dot(D, preds*yp)
 			alpha = 0.5 * log((1-epsilon) / epsilon)
-			D = multiply(D, -alpha*preds*yp)
+			D = multiply(D, exp(-alpha*preds*yp))
 			# Remember the confidence value
 			self.W[k] = alpha
 			self.trees.append(dt)
@@ -213,7 +213,6 @@ class BoostedDecisionTrees(BaggedDecisionTrees):
 		'''
 			Test the BODT model from data matrix and target vector.
 		'''
-		print self.W
 		preds = array([ self.predict(X[:,i]) for i in range(X.shape[1]) ])
 		# Compute loss score
 		S = sum(abs(y - preds))*1.0 / size(y)
