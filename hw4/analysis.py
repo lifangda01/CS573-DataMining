@@ -107,3 +107,95 @@ def analysis_1(models, tssp, num_words, max_depth, n_estimators, debug=False):
 	ax.set_title('Training Set Size v.s. Zero-one-loss')
 	show()
 
+def analysis_2(models, tssp, num_words, max_depth, n_estimators, debug=False):
+	csv_file_name = 'yelp_data.csv'
+	losses_file_name = 'a2_losses.npy'
+	cross_validate(csv_file_name, losses_file_name, models, tssp, num_words, max_depth, n_estimators, debug=debug)
+	# T-test
+	losses = load(losses_file_name)
+	# _, pvalues = ttest_ind(losses[models[0]].T, losses[models[1]].T)
+	# print "P-values are", pvalues
+	# print "Average P is", mean(pvalues)
+	# Calculate mean and standard error
+	means = mean(losses, axis=2) # #models, #tss
+	stds = std(losses, axis=2) # #models, #tss
+	sterrs = stds / sqrt(10)
+	# Plot
+	fig = figure()
+	ax = fig.add_subplot(111)
+	for i, model, color in [(0,'DT','r'), (1,'BDT','g'), (2,'RF','b'), (3,'SVM','c'), (4,'BODT','k')]:
+		ax.errorbar(tssp,means[i],sterrs[i],c=color,marker='o', label=model)
+	if debug:
+		sklosses = load('debug_' + losses_file_name)
+		skmeans = mean(sklosses, axis=2) # #models, #tss
+		skstds = std(sklosses, axis=2) # #models, #tss
+		sksterrs = skstds / sqrt(10)
+		for i, model, color in [(0,'skDT','y'), (1,'skRF','m')]:	
+			ax.errorbar(tssp,skmeans[i],sksterrs[i],c=color,marker='o', label=model)
+	ax.legend(loc=1)
+	ax.set_xlabel('Number of Features')
+	ax.set_ylabel('Loss')
+	ax.set_title('Training Set Size v.s. Zero-one-loss')
+	show()
+
+def analysis_3(models, tssp, num_words, max_depth, n_estimators, debug=False):
+	csv_file_name = 'yelp_data.csv'
+	losses_file_name = 'a2_losses.npy'
+	cross_validate(csv_file_name, losses_file_name, models, tssp, num_words, max_depth, n_estimators, debug=debug)
+	# T-test
+	losses = load(losses_file_name)
+	# _, pvalues = ttest_ind(losses[models[0]].T, losses[models[1]].T)
+	# print "P-values are", pvalues
+	# print "Average P is", mean(pvalues)
+	# Calculate mean and standard error
+	means = mean(losses, axis=2) # #models, #tss
+	stds = std(losses, axis=2) # #models, #tss
+	sterrs = stds / sqrt(10)
+	# Plot
+	fig = figure()
+	ax = fig.add_subplot(111)
+	for i, model, color in [(0,'DT','r'), (1,'BDT','g'), (2,'RF','b'), (3,'SVM','c'), (4,'BODT','k')]:
+		ax.errorbar(tssp,means[i],sterrs[i],c=color,marker='o', label=model)
+	if debug:
+		sklosses = load('debug_' + losses_file_name)
+		skmeans = mean(sklosses, axis=2) # #models, #tss
+		skstds = std(sklosses, axis=2) # #models, #tss
+		sksterrs = skstds / sqrt(10)
+		for i, model, color in [(0,'skDT','y'), (1,'skRF','m')]:	
+			ax.errorbar(tssp,skmeans[i],sksterrs[i],c=color,marker='o', label=model)
+	ax.legend(loc=1)
+	ax.set_xlabel('Max Depth')
+	ax.set_ylabel('Loss')
+	ax.set_title('Training Set Size v.s. Zero-one-loss')
+	show()
+
+def analysis_4(models, tssp, num_words, max_depth, n_estimators, debug=False):
+	csv_file_name = 'yelp_data.csv'
+	losses_file_name = 'a4_losses.npy'
+	cross_validate(csv_file_name, losses_file_name, models, tssp, num_words, max_depth, n_estimators, debug=debug)
+	# T-test
+	losses = load(losses_file_name)
+	# _, pvalues = ttest_ind(losses[models[0]].T, losses[models[1]].T)
+	# print "P-values are", pvalues
+	# print "Average P is", mean(pvalues)
+	# Calculate mean and standard error
+	means = mean(losses, axis=2) # #models, #tss
+	stds = std(losses, axis=2) # #models, #tss
+	sterrs = stds / sqrt(10)
+	# Plot
+	fig = figure()
+	ax = fig.add_subplot(111)
+	for i, model, color in [(0,'DT','r'), (1,'BDT','g'), (2,'RF','b'), (3,'SVM','c'), (4,'BODT','k')]:
+		ax.errorbar(tssp,means[i],sterrs[i],c=color,marker='o', label=model)
+	if debug:
+		sklosses = load('debug_' + losses_file_name)
+		skmeans = mean(sklosses, axis=2) # #models, #tss
+		skstds = std(sklosses, axis=2) # #models, #tss
+		sksterrs = skstds / sqrt(10)
+		for i, model, color in [(0,'skDT','y'), (1,'skRF','m')]:	
+			ax.errorbar(tssp,skmeans[i],sksterrs[i],c=color,marker='o', label=model)
+	ax.legend(loc=1)
+	ax.set_xlabel('Number of Trees')
+	ax.set_ylabel('Loss')
+	ax.set_title('Training Set Size v.s. Zero-one-loss')
+	show()
