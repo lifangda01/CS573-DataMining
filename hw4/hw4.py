@@ -32,6 +32,7 @@ def main():
 		num_words = [1000]
 		max_depth = [10]
 		n_estimators = [50]
+		tssp = [0.25]
 		analysis_1(models, tssp, num_words, max_depth, n_estimators, debug=True)
 		return
 	elif args.modelIdx == 'A2':

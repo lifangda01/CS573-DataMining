@@ -1,7 +1,7 @@
 from pylab import *
 from preprocess import training_preprocess_from_csv, testing_preprocess_from_csv
 
-_gini = lambda y: 1 - sum(( 1.0*unique(y, return_counts=True)[1] / size(y) )**2)
+_gini = lambda y, sum_y: 1 - ( 1.0*sum_y / size(y) )**2 - ( 1.0 - 1.0*sum_y / size(y) )**2
 
 class _Node(object):
 	"""Container for a node in DecisionTree"""
@@ -79,17 +79,20 @@ class DecisionTree(object):
 		if depth > self.max_depth or size(y) < self.min_samples_split:
 			return None
 		# Gini index before split (optional)
-		gini_before = _gini(y)
+		gini_before = _gini(y, sum(y))
 		# Gini index for all possible splits
 		# See who is the best
 		# FIXME: unique features?
 		if self.rf_tree:
-			perm = permutation(X.shape[0])
-			gini_gains = array([ self._get_gini_gain(X, y, k, gini_before) for k in perm[:int(sqrt(X.shape[0]))] ])
-			k_best = perm[ argmax(gini_gains) ]
+			perm = permutation(X.shape[0])[ :int(sqrt(X.shape[0])) ]
+			k_best = self._get_best_gini_gain_index(X[perm], y, gini_before)
+			# gini_gains = array([ self._get_gini_gain(X, y, k, gini_before) for k in perm[:int(sqrt(X.shape[0]))] ])
+			# k_best = perm[ argmax(gini_gains) ]
 		else:
-			gini_gains = array([ self._get_gini_gain(X, y, k, gini_before) for k in range(X.shape[0]) ])
-			k_best = argmax(gini_gains)
+			# gini_gains = array([ self._get_gini_gain(X, y, k, gini_before) for k in range(X.shape[0]) ])
+			# gini_gains = self._get_gini_gains(X, y, gini_before)
+			# k_best = argmax(gini_gains)
+			k_best = self._get_best_gini_gain_index(X, y, gini_before)
 		i_neg = X[k_best] == 0
 		i_pos = X[k_best] > 0
 		# print depth, unique(y, return_counts=True), k_best, gini_gains[k_best:k_best+3]
@@ -103,8 +106,9 @@ class DecisionTree(object):
 		'''
 			Return the majority label, invariant to the number of different labels.
 		'''
-		labels, counts = unique(y, return_counts=True)
-		return labels[argmax(counts)]
+		return round(sum(y)*1.0 / size(y))
+		# labels, counts = unique(y, return_counts=True)
+		# return labels[argmax(counts)]
 
 	def _get_gini_gain(self, X, y, k, gini_before):
 		'''
@@ -113,7 +117,27 @@ class DecisionTree(object):
 		# Split using feature k
 		y_pos = y[ X[k] > 0 ]
 		y_neg = y[ X[k] == 0 ]
-		return gini_before - (size(y_pos)*_gini(y_pos) + size(y_neg)*_gini(y_neg)) / size(y)
+		if size(y_pos) == 0 or size(y_neg) == 0: return gini_before
+		return gini_before - (size(y_pos)*_gini(y_pos, sum(y_pos)) + size(y_neg)*_gini(y_neg, sum(y_neg))) / size(y)		
+
+	def _get_best_gini_gain_index(self, X, y, gini_before):
+		'''
+			Return the Gini gains for all possible splits.
+		'''
+		num_pos = sum(X, axis=1)
+		num_neg = X.shape[1] - num_pos
+		# If a feature already splits perfectly
+		zero_pos = where(num_pos == 0)[0] 
+		if size(zero_pos) > 0: return zero_pos[0]
+		zero_neg = where(num_neg == 0)[0]
+		if size(zero_neg) > 0: return zero_neg[0]
+		pos_pos = dot(X, y)
+		pos_neg = num_pos - pos_pos
+		neg_pos = dot( abs(X-1), y )
+		neg_neg = num_neg - neg_pos
+		gini_pos = 1 - (1.*pos_pos / num_pos)**2 - (1.*pos_neg / num_pos)**2
+		gini_neg = 1 - (1.*neg_pos / num_neg)**2 - (1.*neg_neg / num_neg)**2
+		return argmax( gini_before - ( gini_pos*num_pos + gini_neg*num_neg ) / X.shape[1] )
 
 class BaggedDecisionTrees(object):
 	"""Bag of decision trees."""
@@ -170,8 +194,9 @@ class BaggedDecisionTrees(object):
 		'''
 			Return the majority label, invariant to the number of different labels.
 		'''
-		labels, counts = unique(y, return_counts=True)
-		return labels[argmax(counts)]
+		return round(sum(y)*1.0 / size(y))
+		# labels, counts = unique(y, return_counts=True)
+		# return labels[argmax(counts)]
 			
 class BoostedDecisionTrees(BaggedDecisionTrees):
 	"""BoostedDecisionTrees using AdaBoost"""
@@ -195,6 +220,7 @@ class BoostedDecisionTrees(BaggedDecisionTrees):
 			dt = DecisionTree(max_depth=self.max_depth)
 			D = D / sum(D)
 			# Sample with replacement
+			# FIXME: weighted distrbution
 			indices = randint(0, X.shape[1], X.shape[1])
 			dt.train(X[:,indices], y[indices])
 			# Get the predictions

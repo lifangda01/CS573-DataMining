@@ -1,4 +1,5 @@
 from preprocess import *
+import time
 from dt import DecisionTree, BaggedDecisionTrees, RandomForest, BoostedDecisionTrees
 from svm import SupportVectorMachine
 from sklearn.tree import DecisionTreeClassifier as skDecisionTree
@@ -38,17 +39,24 @@ def cross_validate(csv_file_name, losses_file_name, models,
 			# DT
 			if 'DT' in models:
 				dt = DecisionTree(max_depth=maxdep)
+				t1 = time.time()
 				dt.train(training_X, training_y)
+				t2 = time.time()
 				losses[models.index('DT'),i,j] = dt.test(testing_X, testing_y)
+				if debug: print "DT training: %fs, testing: %f" % (t2-t1, time.time()-t2)
 			# BDT
 			if 'BDT' in models:
 				bdt = BaggedDecisionTrees(max_depth=maxdep, n_estimators=ntrees)
+				t1 = time.time()
 				bdt.train(training_X, training_y)
+				t2 = time.time()
 				losses[models.index('BDT'),i,j] = bdt.test(testing_X, testing_y)
+				if debug: print "BDT training: %fs, testing: %f" % (t2-t1, time.time()-t2)
 			# BODT
 			if 'BODT' in models:
 				bodt = BoostedDecisionTrees(max_depth=maxdep, n_estimators=ntrees)
 				bodt.train(training_X, training_y)
+				t2 = time.time()
 				losses[models.index('BODT'),i,j] = bodt.test(testing_X, testing_y)
 			# RF
 			if 'RF' in models:
@@ -75,7 +83,6 @@ def cross_validate(csv_file_name, losses_file_name, models,
 		i += 1
 	save(losses_file_name, losses)
 	save('debug_' + losses_file_name, sklosses)
-
 
 def analysis_1(models, tssp, num_words, max_depth, n_estimators, debug=False):
 	'''
