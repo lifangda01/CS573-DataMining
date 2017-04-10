@@ -48,7 +48,7 @@ def main():
 		num_words = [1000]
 		max_depth = [5, 10, 15, 20]
 		n_estimators = [50]
-		analysis_2(models, tssp, num_words, max_depth, n_estimators, debug=True)
+		analysis_3(models, tssp, num_words, max_depth, n_estimators, debug=True)
 		return
 	elif args.modelIdx == 'A4':
 		models = ['DT', 'BDT', 'BODT', 'RF', 'SVM']
@@ -56,7 +56,7 @@ def main():
 		num_words = [1000]
 		max_depth = [10]
 		n_estimators = [10, 25, 50, 100]
-		analysis_2(models, tssp, num_words, max_depth, n_estimators, debug=True)
+		analysis_4(models, tssp, num_words, max_depth, n_estimators, debug=True)
 		return
 	else:
 		return

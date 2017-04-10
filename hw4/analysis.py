@@ -78,6 +78,9 @@ def cross_validate(csv_file_name, losses_file_name, models,
 
 
 def analysis_1(models, tssp, num_words, max_depth, n_estimators, debug=False):
+	'''
+		Analysis across tssp.
+	'''
 	csv_file_name = 'yelp_data.csv'
 	losses_file_name = 'a1_losses.npy'
 	cross_validate(csv_file_name, losses_file_name, models, tssp, num_words, max_depth, n_estimators, debug=debug)
@@ -93,7 +96,7 @@ def analysis_1(models, tssp, num_words, max_depth, n_estimators, debug=False):
 	# Plot
 	fig = figure()
 	ax = fig.add_subplot(111)
-	for i, model, color in [(0,'DT','r'), (1,'BDT','g'), (2,'RF','b'), (3,'SVM','c'), (4,'BODT','k')]:
+	for i, model, color in [(0,'DT','r'), (1,'BDT','g'), (2,'BODT','k'), (3,'RF','b'), (4,'SVM','c')]:
 		ax.errorbar(tssp,means[i],sterrs[i],c=color,marker='o', label=model)
 	if debug:
 		sklosses = load('debug_' + losses_file_name)
@@ -109,6 +112,9 @@ def analysis_1(models, tssp, num_words, max_depth, n_estimators, debug=False):
 	show()
 
 def analysis_2(models, tssp, num_words, max_depth, n_estimators, debug=False):
+	'''
+		Analysis across num_words.
+	'''
 	csv_file_name = 'yelp_data.csv'
 	losses_file_name = 'a2_losses.npy'
 	cross_validate(csv_file_name, losses_file_name, models, tssp, num_words, max_depth, n_estimators, debug=debug)
@@ -124,15 +130,15 @@ def analysis_2(models, tssp, num_words, max_depth, n_estimators, debug=False):
 	# Plot
 	fig = figure()
 	ax = fig.add_subplot(111)
-	for i, model, color in [(0,'DT','r'), (1,'BDT','g'), (2,'RF','b'), (3,'SVM','c'), (4,'BODT','k')]:
-		ax.errorbar(tssp,means[i],sterrs[i],c=color,marker='o', label=model)
+	for i, model, color in [(0,'DT','r'), (1,'BDT','g'), (2,'BODT','k'), (3,'RF','b'), (4,'SVM','c')]:
+		ax.errorbar(num_words,means[i],sterrs[i],c=color,marker='o', label=model)
 	if debug:
 		sklosses = load('debug_' + losses_file_name)
 		skmeans = mean(sklosses, axis=2) # #models, #tss
 		skstds = std(sklosses, axis=2) # #models, #tss
 		sksterrs = skstds / sqrt(10)
 		for i, model, color in [(0,'skDT','y'), (1,'skRF','m')]:	
-			ax.errorbar(tssp,skmeans[i],sksterrs[i],c=color,marker='o', label=model)
+			ax.errorbar(num_words,skmeans[i],sksterrs[i],c=color,marker='o', label=model)
 	ax.legend(loc=1)
 	ax.set_xlabel('Number of Features')
 	ax.set_ylabel('Loss')
@@ -140,8 +146,11 @@ def analysis_2(models, tssp, num_words, max_depth, n_estimators, debug=False):
 	show()
 
 def analysis_3(models, tssp, num_words, max_depth, n_estimators, debug=False):
+	'''
+		Analysis across max_depth.
+	'''
 	csv_file_name = 'yelp_data.csv'
-	losses_file_name = 'a2_losses.npy'
+	losses_file_name = 'a3_losses.npy'
 	cross_validate(csv_file_name, losses_file_name, models, tssp, num_words, max_depth, n_estimators, debug=debug)
 	# T-test
 	losses = load(losses_file_name)
@@ -155,15 +164,15 @@ def analysis_3(models, tssp, num_words, max_depth, n_estimators, debug=False):
 	# Plot
 	fig = figure()
 	ax = fig.add_subplot(111)
-	for i, model, color in [(0,'DT','r'), (1,'BDT','g'), (2,'RF','b'), (3,'SVM','c'), (4,'BODT','k')]:
-		ax.errorbar(tssp,means[i],sterrs[i],c=color,marker='o', label=model)
+	for i, model, color in [(0,'DT','r'), (1,'BDT','g'), (2,'BODT','k'), (3,'RF','b'), (4,'SVM','c')]:
+		ax.errorbar(max_depth,means[i],sterrs[i],c=color,marker='o', label=model)
 	if debug:
 		sklosses = load('debug_' + losses_file_name)
 		skmeans = mean(sklosses, axis=2) # #models, #tss
 		skstds = std(sklosses, axis=2) # #models, #tss
 		sksterrs = skstds / sqrt(10)
 		for i, model, color in [(0,'skDT','y'), (1,'skRF','m')]:	
-			ax.errorbar(tssp,skmeans[i],sksterrs[i],c=color,marker='o', label=model)
+			ax.errorbar(max_depth,skmeans[i],sksterrs[i],c=color,marker='o', label=model)
 	ax.legend(loc=1)
 	ax.set_xlabel('Max Depth')
 	ax.set_ylabel('Loss')
@@ -171,6 +180,9 @@ def analysis_3(models, tssp, num_words, max_depth, n_estimators, debug=False):
 	show()
 
 def analysis_4(models, tssp, num_words, max_depth, n_estimators, debug=False):
+	'''
+		Analysis across n_estimators.
+	'''
 	csv_file_name = 'yelp_data.csv'
 	losses_file_name = 'a4_losses.npy'
 	cross_validate(csv_file_name, losses_file_name, models, tssp, num_words, max_depth, n_estimators, debug=debug)
@@ -186,15 +198,15 @@ def analysis_4(models, tssp, num_words, max_depth, n_estimators, debug=False):
 	# Plot
 	fig = figure()
 	ax = fig.add_subplot(111)
-	for i, model, color in [(0,'DT','r'), (1,'BDT','g'), (2,'RF','b'), (3,'SVM','c'), (4,'BODT','k')]:
-		ax.errorbar(tssp,means[i],sterrs[i],c=color,marker='o', label=model)
+	for i, model, color in [(0,'DT','r'), (1,'BDT','g'), (2,'BODT','k'), (3,'RF','b'), (4,'SVM','c')]:
+		ax.errorbar(n_estimators,means[i],sterrs[i],c=color,marker='o', label=model)
 	if debug:
 		sklosses = load('debug_' + losses_file_name)
 		skmeans = mean(sklosses, axis=2) # #models, #tss
 		skstds = std(sklosses, axis=2) # #models, #tss
 		sksterrs = skstds / sqrt(10)
 		for i, model, color in [(0,'skDT','y'), (1,'skRF','m')]:	
-			ax.errorbar(tssp,skmeans[i],sksterrs[i],c=color,marker='o', label=model)
+			ax.errorbar(n_estimators,skmeans[i],sksterrs[i],c=color,marker='o', label=model)
 	ax.legend(loc=1)
 	ax.set_xlabel('Number of Trees')
 	ax.set_ylabel('Loss')
