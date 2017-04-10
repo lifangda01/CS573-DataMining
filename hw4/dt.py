@@ -34,7 +34,7 @@ class DecisionTree(object):
 			Train the DT model from data matrix and target vector.
 		'''
 		# Recursively grow the tree
-		self.root = self._find_best_split(X, y, None, 1)
+		self.root = self._find_best_split(X, y, 1)
 
 	def test_from_csv(self, csv_file_name):
 		'''
@@ -69,7 +69,7 @@ class DecisionTree(object):
 			curr = next
 		return label
 
-	def _find_best_split(self, X, y, curr, depth):
+	def _find_best_split(self, X, y, depth):
 		'''
 			Private function for finding the best split for the current node.
 		'''
@@ -86,20 +86,18 @@ class DecisionTree(object):
 		if self.rf_tree:
 			perm = permutation(X.shape[0])[ :int(sqrt(X.shape[0])) ]
 			k_best = self._get_best_gini_gain_index(X[perm], y, gini_before)
-			# gini_gains = array([ self._get_gini_gain(X, y, k, gini_before) for k in perm[:int(sqrt(X.shape[0]))] ])
-			# k_best = perm[ argmax(gini_gains) ]
 		else:
-			# gini_gains = array([ self._get_gini_gain(X, y, k, gini_before) for k in range(X.shape[0]) ])
-			# gini_gains = self._get_gini_gains(X, y, gini_before)
-			# k_best = argmax(gini_gains)
+			gini_gains = array([ self._get_gini_gain(X, y, k, gini_before) for k in range(X.shape[0]) ])
+			k_best_old = argmax(gini_gains)
 			k_best = self._get_best_gini_gain_index(X, y, gini_before)
+			print k_best_old, k_best
 		i_neg = X[k_best] == 0
 		i_pos = X[k_best] > 0
 		# print depth, unique(y, return_counts=True), k_best, gini_gains[k_best:k_best+3]
 		# Recurse
 		curr = _Node(feature_index=k_best, label=self._get_majority_label(y))
-		curr.left = self._find_best_split(X[:, i_neg], y[i_neg], curr.left, depth+1)
-		curr.right = self._find_best_split(X[:, i_pos], y[i_pos], curr.right, depth+1)
+		curr.left = self._find_best_split(X[:, i_neg], y[i_neg], depth+1)
+		curr.right = self._find_best_split(X[:, i_pos], y[i_pos], depth+1)
 		return curr
 
 	def _get_majority_label(self, y):
@@ -124,20 +122,20 @@ class DecisionTree(object):
 		'''
 			Return the Gini gains for all possible splits.
 		'''
-		num_pos = sum(X, axis=1)
-		num_neg = X.shape[1] - num_pos
-		# If a feature already splits perfectly
-		zero_pos = where(num_pos == 0)[0] 
-		if size(zero_pos) > 0: return zero_pos[0]
-		zero_neg = where(num_neg == 0)[0]
-		if size(zero_neg) > 0: return zero_neg[0]
-		pos_pos = dot(X, y)
-		pos_neg = num_pos - pos_pos
-		neg_pos = dot( abs(X-1), y )
-		neg_neg = num_neg - neg_pos
-		gini_pos = 1 - (1.*pos_pos / num_pos)**2 - (1.*pos_neg / num_pos)**2
-		gini_neg = 1 - (1.*neg_pos / num_neg)**2 - (1.*neg_neg / num_neg)**2
-		return argmax( gini_before - ( gini_pos*num_pos + gini_neg*num_neg ) / X.shape[1] )
+		X_num_pos = sum(X, axis=1)
+		X_num_neg = X.shape[1] - X_num_pos
+		# # If a feature already splits perfectly
+		# zero_pos = where(num_pos == 0)[0] 
+		# if size(zero_pos) > 0: return choice(zero_pos)
+		# zero_neg = where(num_neg == 0)[0]
+		# if size(zero_neg) > 0: return choice(zero_neg)
+		X_pos_y_pos = dot(X, y)
+		X_pos_y_neg = X_num_pos - X_pos_y_pos
+		X_neg_y_pos = dot( abs(X-1), y )
+		X_neg_y_neg = X_num_neg - X_neg_y_pos
+		gini_pos = 1 - (1.*X_pos_y_pos / X_num_pos)**2 - (1.*X_pos_y_neg / X_num_pos)**2
+		gini_neg = 1 - (1.*X_neg_y_pos / X_num_neg)**2 - (1.*X_neg_y_neg / X_num_neg)**2
+		return argmax( gini_before - ( gini_pos*X_num_pos + gini_neg*X_num_neg ) / X.shape[1] )
 
 class BaggedDecisionTrees(object):
 	"""Bag of decision trees."""
