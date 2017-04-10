@@ -14,7 +14,7 @@ def cross_validate(csv_file_name, losses_file_name, models,
 	total_num = 2000
 	lists_of_dict = []
 	setups = [(p,w,d,t) for p in tssp for w in num_words for d in max_depth for t in n_estimators]
-	losses = zeros((len(models), len(setups), 10)) # #models, #cases, #folds
+	losses = zeros((5, len(setups), 10)) # #models, #cases, #folds
 	sklosses = zeros((2, len(setups), 10))
 	generate_train_and_test_files_cv(csv_file_name, 10)
 	# Generate temp CV files
@@ -42,7 +42,7 @@ def cross_validate(csv_file_name, losses_file_name, models,
 				t1 = time.time()
 				dt.train(training_X, training_y)
 				t2 = time.time()
-				losses[models.index('DT'),i,j] = dt.test(testing_X, testing_y)
+				losses[0,i,j] = dt.test(testing_X, testing_y)
 				if debug: print "DT training: %fs, testing: %f" % (t2-t1, time.time()-t2)
 			# BDT
 			if 'BDT' in models:
@@ -50,24 +50,24 @@ def cross_validate(csv_file_name, losses_file_name, models,
 				t1 = time.time()
 				bdt.train(training_X, training_y)
 				t2 = time.time()
-				losses[models.index('BDT'),i,j] = bdt.test(testing_X, testing_y)
+				losses[1,i,j] = bdt.test(testing_X, testing_y)
 				if debug: print "BDT training: %fs, testing: %f" % (t2-t1, time.time()-t2)
 			# BODT
 			if 'BODT' in models:
 				bodt = BoostedDecisionTrees(max_depth=maxdep, n_estimators=ntrees)
 				bodt.train(training_X, training_y)
 				t2 = time.time()
-				losses[models.index('BODT'),i,j] = bodt.test(testing_X, testing_y)
+				losses[2,i,j] = bodt.test(testing_X, testing_y)
 			# RF
 			if 'RF' in models:
 				rf = RandomForest(max_depth=maxdep, n_estimators=ntrees)
 				rf.train(training_X, training_y)
-				losses[models.index('RF'),i,j] = rf.test(testing_X, testing_y)
+				losses[3,i,j] = rf.test(testing_X, testing_y)
 			# SVM
 			if 'SVM' in models:
 				svm = SupportVectorMachine()
 				svm.train(training_X, training_y)
-				losses[models.index('SVM'),i,j] = svm.test(testing_X, testing_y)
+				losses[4,i,j] = svm.test(testing_X, testing_y)
 			# Libary functions
 			if debug:
 				training_y[training_y==0] = -1

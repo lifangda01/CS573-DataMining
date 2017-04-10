@@ -73,6 +73,7 @@ class DecisionTree(object):
 		'''
 			Private function for finding the best split for the current node.
 		'''
+		num_features, num_samples = X.shape
 		# Recursion-termination condition
 		if size(unique(y)) == 1:
 			return _Node(label=y[0])
@@ -84,13 +85,14 @@ class DecisionTree(object):
 		# See who is the best
 		# FIXME: unique features?
 		if self.rf_tree:
-			perm = permutation(X.shape[0])[ :int(sqrt(X.shape[0])) ]
-			k_best = self._get_best_gini_gain_index(X[perm], y, gini_before)
+			perm = permutation(num_features)[ :int(sqrt(num_features)) ]
+			k_temp = self._get_best_gini_gain_index(X[perm], y, gini_before)
+			k_best = perm[k_temp]
 		else:
-			gini_gains = array([ self._get_gini_gain(X, y, k, gini_before) for k in range(X.shape[0]) ])
-			k_best_old = argmax(gini_gains)
+			# gini_gains = array([ self._get_gini_gain(X, y, k, gini_before) for k in range(X.shape[0]) ])
+			# k_best_old = argmax(gini_gains)
 			k_best = self._get_best_gini_gain_index(X, y, gini_before)
-			print k_best_old, k_best
+			# print k_best_old, k_best
 		i_neg = X[k_best] == 0
 		i_pos = X[k_best] > 0
 		# print depth, unique(y, return_counts=True), k_best, gini_gains[k_best:k_best+3]
@@ -122,13 +124,8 @@ class DecisionTree(object):
 		'''
 			Return the Gini gains for all possible splits.
 		'''
-		X_num_pos = sum(X, axis=1)
+		X_num_pos = sum(X, axis=1) + 1e-8 # Hacky tweak to avoid division by zero
 		X_num_neg = X.shape[1] - X_num_pos
-		# # If a feature already splits perfectly
-		# zero_pos = where(num_pos == 0)[0] 
-		# if size(zero_pos) > 0: return choice(zero_pos)
-		# zero_neg = where(num_neg == 0)[0]
-		# if size(zero_neg) > 0: return choice(zero_neg)
 		X_pos_y_pos = dot(X, y)
 		X_pos_y_neg = X_num_pos - X_pos_y_pos
 		X_neg_y_pos = dot( abs(X-1), y )
@@ -210,7 +207,8 @@ class BoostedDecisionTrees(BaggedDecisionTrees):
 			Train the BDT model from data matrix and target vector.
 		'''
 		# Initialize the sample weights
-		D = ones(X.shape[1])
+		num_features, num_samples = X.shape
+		D = ones(num_samples)
 		yp = copy(y)
 		yp[y == 0] = -1
 		for k in range(self.n_estimators):
@@ -219,10 +217,11 @@ class BoostedDecisionTrees(BaggedDecisionTrees):
 			D = D / sum(D)
 			# Sample with replacement
 			# FIXME: weighted distrbution
-			indices = randint(0, X.shape[1], X.shape[1])
+			# indices = randint(0, num_samples, num_samples)
+			indices = choice(arange(num_samples), size=num_samples, p=D)
 			dt.train(X[:,indices], y[indices])
 			# Get the predictions
-			preds = array([ dt.predict(X[:,i]) for i in range(X.shape[1]) ])
+			preds = array([ dt.predict(X[:,i]) for i in range(num_samples) ])
 			preds[preds == 0] = -1
 			# Update the weights
 			# http://cs.nyu.edu/~dsontag/courses/ml12/slides/lecture13.pdf
@@ -258,10 +257,11 @@ class RandomForest(BaggedDecisionTrees):
 		'''
 			Train the RF model from data matrix and target vector.
 		'''
+		num_features, num_samples = X.shape
 		for i in range(self.n_estimators):
 			dt = DecisionTree(max_depth=self.max_depth, rf_tree=True)
 			# Sample with replacement
-			indices = randint(0, X.shape[1], X.shape[1])
+			indices = randint(0, num_samples, num_samples)
 			dt.train(X[:,indices], y[indices])
 			self.trees.append(dt)
 
