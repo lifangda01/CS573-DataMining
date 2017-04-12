@@ -96,9 +96,9 @@ def analysis_1(models, tssp, num_words, max_depth, n_estimators, debug=False):
 	# T-test
 	losses = load(losses_file_name)
 	# BDT v.s. SVM
-	_, pvalues = ttest_rel(losses[1].T, losses[4].T)
-	print "P-values are", pvalues
-	print "Average P is", mean(pvalues)
+	tvalues, pvalues = ttest_rel(losses[2].T, losses[1].T)
+	print "T-values are", tvalues
+	print "One-tailed P-values are", pvalues / len(tssp) / 2
 	# Calculate mean and standard error
 	means = mean(losses, axis=2) # #models, #tss
 	stds = std(losses, axis=2) # #models, #tss
@@ -131,9 +131,9 @@ def analysis_2(models, tssp, num_words, max_depth, n_estimators, debug=False):
 	# cross_validate(csv_file_name, losses_file_name, models, tssp, num_words, max_depth, n_estimators, debug=debug)
 	# T-test
 	losses = load(losses_file_name)
-	_, pvalues = ttest_rel(losses[1].T, losses[4].T)
-	print "P-values are", pvalues
-	print "Average P is", mean(pvalues)
+	tvalues, pvalues = ttest_rel(losses[1].T, losses[4].T)
+	print "T-values are", tvalues
+	print "One-tailed P-values are", pvalues / len(num_words) / 2
 	# Calculate mean and standard error
 	means = mean(losses, axis=2) # #models, #tss
 	stds = std(losses, axis=2) # #models, #tss
@@ -166,9 +166,9 @@ def analysis_3(models, tssp, num_words, max_depth, n_estimators, debug=False):
 	# cross_validate(csv_file_name, losses_file_name, models, tssp, num_words, max_depth, n_estimators, debug=debug)
 	# T-test
 	losses = load(losses_file_name)
-	# _, pvalues = ttest_rel(losses[models[0]].T, losses[models[1]].T)
-	# print "P-values are", pvalues
-	# print "Average P is", mean(pvalues)
+	tvalues, pvalues = ttest_rel(losses[1].T, losses[3].T)
+	print "T-values are", tvalues
+	print "One-tailed P-values are", pvalues / len(max_depth) / 2
 	# Calculate mean and standard error
 	means = mean(losses, axis=2) # #models, #tss
 	stds = std(losses, axis=2) # #models, #tss
@@ -200,9 +200,9 @@ def analysis_4(models, tssp, num_words, max_depth, n_estimators, debug=False):
 	# cross_validate(csv_file_name, losses_file_name, models, tssp, num_words, max_depth, n_estimators, debug=debug)
 	# T-test
 	losses = load(losses_file_name)
-	# _, pvalues = ttest_rel(losses[models[0]].T, losses[models[1]].T)
-	# print "P-values are", pvalues
-	# print "Average P is", mean(pvalues)
+	tvalues, pvalues = ttest_rel(losses[0].T, losses[1].T)
+	print "T-values are", tvalues
+	print "One-tailed P-values are", pvalues / len(n_estimators) / 2
 	# Calculate mean and standard error
 	means = mean(losses, axis=2) # #models, #tss
 	stds = std(losses, axis=2) # #models, #tss
