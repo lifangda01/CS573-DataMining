@@ -4,7 +4,7 @@ from dt import DecisionTree, BaggedDecisionTrees, RandomForest, BoostedDecisionT
 from svm import SupportVectorMachine
 from analysis import analysis_1, analysis_2, analysis_3, analysis_4
 
-parser = argparse.ArgumentParser(description='Train and test a LR or SVM Classifier.')
+parser = argparse.ArgumentParser(description='Train and test decision tree based classifiers.')
 # Required arguments
 parser.add_argument('trainingDataFilename',	help="Name of the training data csv file")
 parser.add_argument('testDataFilename', help="Name of the test data csv file")
