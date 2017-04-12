@@ -1,8 +1,6 @@
 from pylab import *
 from preprocess import training_preprocess_from_csv, testing_preprocess_from_csv
 
-_gini = lambda y, sum_y: 1 - ( 1.0*sum_y / size(y) )**2 - ( 1.0 - 1.0*sum_y / size(y) )**2
-
 class _Node(object):
 	"""Container for a node in DecisionTree"""
 	def __init__(self, feature_index=0, label=None):
@@ -80,7 +78,7 @@ class DecisionTree(object):
 		if depth > self.max_depth or size(y) < self.min_samples_split:
 			return None
 		# Gini index before split (optional)
-		gini_before = _gini(y, sum(y))
+		gini_before = 0
 		# Gini index for all possible splits
 		# See who is the best
 		# FIXME: unique features?
@@ -89,13 +87,9 @@ class DecisionTree(object):
 			k_temp = self._get_best_gini_gain_index(X[perm], y, gini_before)
 			k_best = perm[k_temp]
 		else:
-			# gini_gains = array([ self._get_gini_gain(X, y, k, gini_before) for k in range(X.shape[0]) ])
-			# k_best_old = argmax(gini_gains)
 			k_best = self._get_best_gini_gain_index(X, y, gini_before)
-			# print k_best_old, k_best
 		i_neg = X[k_best] == 0
 		i_pos = X[k_best] > 0
-		# print depth, unique(y, return_counts=True), k_best, gini_gains[k_best:k_best+3]
 		# Recurse
 		curr = _Node(feature_index=k_best, label=self._get_majority_label(y))
 		curr.left = self._find_best_split(X[:, i_neg], y[i_neg], depth+1)
@@ -107,8 +101,6 @@ class DecisionTree(object):
 			Return the majority label, invariant to the number of different labels.
 		'''
 		return round(sum(y)*1.0 / size(y))
-		# labels, counts = unique(y, return_counts=True)
-		# return labels[argmax(counts)]
 
 	def _get_gini_gain(self, X, y, k, gini_before):
 		'''
@@ -190,8 +182,6 @@ class BaggedDecisionTrees(object):
 			Return the majority label, invariant to the number of different labels.
 		'''
 		return round(sum(y)*1.0 / size(y))
-		# labels, counts = unique(y, return_counts=True)
-		# return labels[argmax(counts)]
 			
 class BoostedDecisionTrees(BaggedDecisionTrees):
 	"""BoostedDecisionTrees using AdaBoost"""
@@ -217,7 +207,6 @@ class BoostedDecisionTrees(BaggedDecisionTrees):
 			D = D / sum(D)
 			# Sample with replacement
 			# FIXME: weighted distrbution
-			# indices = randint(0, num_samples, num_samples)
 			indices = choice(arange(num_samples), size=num_samples, p=D)
 			dt.train(X[:,indices], y[indices])
 			# Get the predictions

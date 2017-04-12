@@ -2,6 +2,7 @@ from preprocess import *
 import time
 from dt import DecisionTree, BaggedDecisionTrees, RandomForest, BoostedDecisionTrees
 from svm import SupportVectorMachine
+from scipy.stats import ttest_rel
 from sklearn.tree import DecisionTreeClassifier as skDecisionTree
 from sklearn.ensemble import RandomForestClassifier as skRandomForest
 
@@ -89,13 +90,15 @@ def analysis_1(models, tssp, num_words, max_depth, n_estimators, debug=False):
 		Analysis across tssp.
 	'''
 	csv_file_name = 'yelp_data.csv'
-	losses_file_name = 'a1_losses.npy'
-	cross_validate(csv_file_name, losses_file_name, models, tssp, num_words, max_depth, n_estimators, debug=debug)
+	# losses_file_name = 'a1_losses.npy'
+	losses_file_name = 'final_a1.npy'
+	# cross_validate(csv_file_name, losses_file_name, models, tssp, num_words, max_depth, n_estimators, debug=debug)
 	# T-test
 	losses = load(losses_file_name)
-	# _, pvalues = ttest_ind(losses[models[0]].T, losses[models[1]].T)
-	# print "P-values are", pvalues
-	# print "Average P is", mean(pvalues)
+	# BDT v.s. SVM
+	_, pvalues = ttest_rel(losses[1].T, losses[4].T)
+	print "P-values are", pvalues
+	print "Average P is", mean(pvalues)
 	# Calculate mean and standard error
 	means = mean(losses, axis=2) # #models, #tss
 	stds = std(losses, axis=2) # #models, #tss
@@ -123,13 +126,14 @@ def analysis_2(models, tssp, num_words, max_depth, n_estimators, debug=False):
 		Analysis across num_words.
 	'''
 	csv_file_name = 'yelp_data.csv'
-	losses_file_name = 'a2_losses.npy'
-	cross_validate(csv_file_name, losses_file_name, models, tssp, num_words, max_depth, n_estimators, debug=debug)
+	# losses_file_name = 'a2_losses.npy'
+	losses_file_name = 'final_a2.npy'
+	# cross_validate(csv_file_name, losses_file_name, models, tssp, num_words, max_depth, n_estimators, debug=debug)
 	# T-test
 	losses = load(losses_file_name)
-	# _, pvalues = ttest_ind(losses[models[0]].T, losses[models[1]].T)
-	# print "P-values are", pvalues
-	# print "Average P is", mean(pvalues)
+	_, pvalues = ttest_rel(losses[1].T, losses[4].T)
+	print "P-values are", pvalues
+	print "Average P is", mean(pvalues)
 	# Calculate mean and standard error
 	means = mean(losses, axis=2) # #models, #tss
 	stds = std(losses, axis=2) # #models, #tss
@@ -149,7 +153,7 @@ def analysis_2(models, tssp, num_words, max_depth, n_estimators, debug=False):
 	ax.legend(loc=1)
 	ax.set_xlabel('Number of Features')
 	ax.set_ylabel('Loss')
-	ax.set_title('Training Set Size v.s. Zero-one-loss')
+	ax.set_title('Number of Features v.s. Zero-one-loss')
 	show()
 
 def analysis_3(models, tssp, num_words, max_depth, n_estimators, debug=False):
@@ -157,11 +161,12 @@ def analysis_3(models, tssp, num_words, max_depth, n_estimators, debug=False):
 		Analysis across max_depth.
 	'''
 	csv_file_name = 'yelp_data.csv'
-	losses_file_name = 'a3_losses.npy'
-	cross_validate(csv_file_name, losses_file_name, models, tssp, num_words, max_depth, n_estimators, debug=debug)
+	# losses_file_name = 'a3.npy'
+	losses_file_name = 'final_a3.npy'
+	# cross_validate(csv_file_name, losses_file_name, models, tssp, num_words, max_depth, n_estimators, debug=debug)
 	# T-test
 	losses = load(losses_file_name)
-	# _, pvalues = ttest_ind(losses[models[0]].T, losses[models[1]].T)
+	# _, pvalues = ttest_rel(losses[models[0]].T, losses[models[1]].T)
 	# print "P-values are", pvalues
 	# print "Average P is", mean(pvalues)
 	# Calculate mean and standard error
@@ -183,7 +188,7 @@ def analysis_3(models, tssp, num_words, max_depth, n_estimators, debug=False):
 	ax.legend(loc=1)
 	ax.set_xlabel('Max Depth')
 	ax.set_ylabel('Loss')
-	ax.set_title('Training Set Size v.s. Zero-one-loss')
+	ax.set_title('Max Depth v.s. Zero-one-loss')
 	show()
 
 def analysis_4(models, tssp, num_words, max_depth, n_estimators, debug=False):
@@ -191,11 +196,11 @@ def analysis_4(models, tssp, num_words, max_depth, n_estimators, debug=False):
 		Analysis across n_estimators.
 	'''
 	csv_file_name = 'yelp_data.csv'
-	losses_file_name = 'a4_losses.npy'
-	cross_validate(csv_file_name, losses_file_name, models, tssp, num_words, max_depth, n_estimators, debug=debug)
+	losses_file_name = 'final_a4.npy'
+	# cross_validate(csv_file_name, losses_file_name, models, tssp, num_words, max_depth, n_estimators, debug=debug)
 	# T-test
 	losses = load(losses_file_name)
-	# _, pvalues = ttest_ind(losses[models[0]].T, losses[models[1]].T)
+	# _, pvalues = ttest_rel(losses[models[0]].T, losses[models[1]].T)
 	# print "P-values are", pvalues
 	# print "Average P is", mean(pvalues)
 	# Calculate mean and standard error
@@ -217,5 +222,5 @@ def analysis_4(models, tssp, num_words, max_depth, n_estimators, debug=False):
 	ax.legend(loc=1)
 	ax.set_xlabel('Number of Trees')
 	ax.set_ylabel('Loss')
-	ax.set_title('Training Set Size v.s. Zero-one-loss')
+	ax.set_title('Number of Trees v.s. Zero-one-loss')
 	show()

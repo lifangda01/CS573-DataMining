@@ -1,4 +1,5 @@
 import argparse
+from pylab import *
 from dt import DecisionTree, BaggedDecisionTrees, RandomForest, BoostedDecisionTrees
 from svm import SupportVectorMachine
 from analysis import analysis_1, analysis_2, analysis_3, analysis_4
@@ -14,6 +15,8 @@ parser.add_argument('modelIdx', help="Model to use: 1 for Decision Tree, \
 													5 for SVM. \
 													A1..A4 for analysis 1 to 4.")
 args = parser.parse_args()
+
+set_printoptions(precision=3)
 
 def main():
 	if args.modelIdx == '1':
@@ -32,9 +35,7 @@ def main():
 		num_words = [1000]
 		max_depth = [10]
 		n_estimators = [50]
-		# tssp = [0.25]
-		models = ['DT']
-		analysis_1(models, tssp, num_words, max_depth, n_estimators, debug=True)
+		analysis_1(models, tssp, num_words, max_depth, n_estimators, debug=False)
 		return
 	elif args.modelIdx == 'A2':
 		models = ['DT', 'BDT', 'BODT', 'RF', 'SVM']
@@ -42,7 +43,7 @@ def main():
 		num_words = [200, 500, 1000, 1500]
 		max_depth = [10]
 		n_estimators = [50]
-		analysis_2(models, tssp, num_words, max_depth, n_estimators, debug=True)
+		analysis_2(models, tssp, num_words, max_depth, n_estimators, debug=False)
 		return
 	elif args.modelIdx == 'A3':
 		models = ['DT', 'BDT', 'BODT', 'RF', 'SVM']
@@ -50,7 +51,7 @@ def main():
 		num_words = [1000]
 		max_depth = [5, 10, 15, 20]
 		n_estimators = [50]
-		analysis_3(models, tssp, num_words, max_depth, n_estimators, debug=True)
+		analysis_3(models, tssp, num_words, max_depth, n_estimators, debug=False)
 		return
 	elif args.modelIdx == 'A4':
 		models = ['DT', 'BDT', 'BODT', 'RF', 'SVM']
@@ -58,7 +59,7 @@ def main():
 		num_words = [1000]
 		max_depth = [10]
 		n_estimators = [10, 25, 50, 100]
-		analysis_4(models, tssp, num_words, max_depth, n_estimators, debug=True)
+		analysis_4(models, tssp, num_words, max_depth, n_estimators, debug=False)
 		return
 	else:
 		return
