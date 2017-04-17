@@ -1,10 +1,34 @@
 from pylab import *
-from sklearn.neighbors import NearestNeighbors
+from scipy.sparse.linalg import svds
 
 class PCA(object):
 	def __init__(self, K):
 		super(PCA, self).__init__()
 		self.K = K
+		self.WK = None
+
+	def fit(self, X):
+		'''
+			Fit the model. X is num_samples x num_features.
+		'''
+		# Follow the notation of Avi's tutorial
+		X = X.T
+		m = mean(X, axis=1)
+		_, _, Ut = svds(dot(X.T, X), k=self.K)
+		W = dot(X, Ut.T)
+		# Preserve the first K eigenvectors
+		self.WK = W[:,:self.K]
+		# Return the eigenvectors
+		return self.WK.T
+
+	def transform(self, X):
+		'''
+			Transform the data. X is num_samples x num_features.
+		'''
+		X = X.T
+		m = mean(X, axis=1)
+		Y = dot(self.WK.T, X - m.reshape(-1,1))
+		return Y.T
 
 	def fit_transform(self, X):
 		'''
@@ -13,13 +37,5 @@ class PCA(object):
 			Each sample is a row vector (same with sklearn).
 			Return num_samples x K.
 		'''
-		# Follow the notation of Avi's tutorial
-		X = X.T
-		m = mean(X, axis=1)
-		_, _, Ut = svd(dot(X.T, X))
-		W = dot(X, Ut.T)
-		# Preserve the first K eigenvectors
-		WK = W[:,:self.K]
-		# Project all samples to the K-D subspace
-		Y = dot( WK.T, X - m.reshape(-1,1) )
-		return Y.T
+		self.fit(X)
+		return self.transform(X)

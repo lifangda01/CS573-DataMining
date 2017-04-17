@@ -16,6 +16,10 @@ def main():
 		A1()
 	if args.analysis == 'A2':
 		A2()
+	if args.analysis == 'Bonus2':
+		Bonus2()
+	if args.analysis == 'Bonus3':
+		Bonus3()
 
 if __name__ == '__main__':
 	main()
