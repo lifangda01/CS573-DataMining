@@ -18,5 +18,4 @@ def A2():
 	labels = array(emb[perm, 1], dtype=int)
 	colors = rand(10, 3)[labels, :]
 	scatter(emb[perm, 2], emb[perm, 3], c=colors, alpha=0.9, s=10)
-	legend()
 	show()
