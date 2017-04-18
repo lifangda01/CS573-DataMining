@@ -2,6 +2,9 @@ from pylab import *
 from scipy.sparse.linalg import svds
 
 class PCA(object):
+	'''
+		PCA modified from ECE661.
+	'''
 	def __init__(self, K):
 		super(PCA, self).__init__()
 		self.K = K
@@ -17,6 +20,7 @@ class PCA(object):
 		_, _, Ut = svds(dot(X.T, X), k=self.K)
 		W = dot(X, Ut.T)
 		# Preserve the first K eigenvectors
+		# Each column is an eigenvector
 		self.WK = W[:,:self.K]
 		# Return the eigenvectors
 		return self.WK.T
@@ -27,6 +31,7 @@ class PCA(object):
 		'''
 		X = X.T
 		m = mean(X, axis=1)
+		# Y is num_features x num_samples
 		Y = dot(self.WK.T, X - m.reshape(-1,1))
 		return Y.T
 
