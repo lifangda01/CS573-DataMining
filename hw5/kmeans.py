@@ -64,11 +64,9 @@ class KMeans(object):
 				minlength=self.n_clusters * n_classes).reshape(n_clusters, n_classes)
 			pcg = pcg * 1.0 / sum(pcg, axis=0)
 			# nomin = sum(pcg * log(pcg)) - sum(dot(pcg, logpc)) - sum(dot(logpg, pcg))
-			nomin = sum(pcg / pc / pg[:, None])
+			nomin = sum(pcg * log(pcg / pc / pg[:, None]))
 			denom = - dot(pc, logpc) - dot(pg, logpg)
 			print pcg
-			print pc
-			print pg
 			print nomin, denom
 			self.NMI = nomin / denom
 			print "sklearn NMI, NMI =", mutual_info_score(y, ind), nomin
