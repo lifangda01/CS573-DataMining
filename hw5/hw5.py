@@ -16,6 +16,8 @@ def main():
 		A1()
 	if args.analysis == 'A2':
 		A2()
+	if args.analysis == 'B1':
+		B1()
 	if args.analysis == 'Bonus2':
 		Bonus2()
 	if args.analysis == 'Bonus3':

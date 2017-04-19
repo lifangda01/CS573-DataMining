@@ -22,6 +22,33 @@ def A2():
 	scatter(emb[perm, 2], emb[perm, 3], c=colors, alpha=0.9, s=10)
 	show()
 
+def B1():
+	'''
+		Plot WC_SSD and SC over K.
+	'''
+	K = [2, 4, 6, 8, 16, 32]
+	fnames = ['digits-embedding.csv', 'digits-embedding-2467.csv', 'digits-embedding-67.csv']
+	wc_ssd = zeros((len(fnames), len(K)))
+	sc = zeros((len(fnames), len(K)))
+	for i, fname in enumerate(fnames):	
+		X = genfromtxt(fname, delimiter=',')[:, 2:]
+		for j, k in enumerate(K):
+			kmeans = KMeans(n_clusters=k)
+			kmeans.fit(X)
+			wc_ssd[i, j], sc[i, j], _ = kmeans.get_evals()
+	# Plot WC_SSD
+	figure()
+	for i, fname in enumerate(fnames):
+		plot(K, wc_ssd[i], label=fname)
+	legend()
+	title('WC_SSD v.s. K')
+	figure()
+	for i, fname in enumerate(fnames):
+		plot(K, sc[i], label=fname)
+	legend()
+	title('SC v.s. K')
+	show()
+
 def Bonus2():
 	'''
 		Visualization of the first 10 eigen vectors.
