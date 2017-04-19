@@ -1,5 +1,6 @@
 from pylab import *
 from sklearn.neighbors import NearestNeighbors
+from sklearn.metrics import silhouette_score
 
 class KMeans(object):
 	"""KMeans clustering"""
@@ -11,10 +12,11 @@ class KMeans(object):
 		self.SC = 0.
 		self.NMI = 0.
 
-	def fit(self, X):
+	def fit(self, X, y=None):
 		'''
 			Compute k-means clustering.
 			X is n_samples x n_features.
+			y is n_samples.
 		'''
 		n_samples, n_features = X.shape
 		# Randomly select K samples as initial centers
@@ -47,6 +49,10 @@ class KMeans(object):
 		# Encode ind along with X
 		X_enc = hstack((X, ind.reshape(-1, 1)))
 		self.SC = mean(apply_along_axis(sc, 1, X_enc))
+		# Compute the NMI
+		if isinstance(y, ndarray):
+			pc = unique(y, return_counts=True)[1]
+			pg = unique(ind, return_counts=True)[1]
 		return ind
 
 	def get_evals(self):
@@ -56,11 +62,13 @@ class KMeans(object):
 		return self.WC_SSD, self.SC, self.NMI
 
 if __name__ == '__main__':
-	X = randn(1000,2)
 	n_clusters = 10
+	X = randn(1000,2)
+	y = randint(n_clusters, size=1000)
 	kmeans = KMeans(n_clusters)
-	ind = kmeans.fit(X)
+	ind = kmeans.fit(X, y)
 	print "WC_SSD, SC, NMI =", kmeans.get_evals()
+	print "sklearn SC =", silhouette_score(X, ind)
 	colors = rand(n_clusters, 3)[ind, :]
 	scatter(X[:, 0], X[:, 1], c=colors, alpha=0.9, s=30)
 	show()
