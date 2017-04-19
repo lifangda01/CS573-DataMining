@@ -1,6 +1,6 @@
 from pylab import *
 from sklearn.neighbors import NearestNeighbors
-from sklearn.metrics import silhouette_score
+from sklearn.metrics import silhouette_score, mutual_info_score
 
 class KMeans(object):
 	"""KMeans clustering"""
@@ -8,9 +8,9 @@ class KMeans(object):
 		super(KMeans, self).__init__()
 		self.n_clusters = n_clusters
 		self.max_iter = max_iter
-		self.WC_SSD = 0.
-		self.SC = 0.
-		self.NMI = 0.
+		self.WC_SSD = -1.
+		self.SC = -1.
+		self.NMI = -1.
 
 	def fit(self, X, y=None):
 		'''
@@ -52,7 +52,26 @@ class KMeans(object):
 		# Compute the NMI
 		if isinstance(y, ndarray):
 			pc = unique(y, return_counts=True)[1]
+			pc = pc * 1.0 / sum(pc)
+			logpc = log(pc)
+			n_classes = size(pc)
 			pg = unique(ind, return_counts=True)[1]
+			pg = pg * 1.0 / sum(pg)
+			logpg = log(pg)
+			# Compute the contingency table
+			# pcg is n_clusters x n_classes
+			pcg = bincount(self.n_clusters * ind + y, 
+				minlength=self.n_clusters * n_classes).reshape(n_clusters, n_classes)
+			pcg = pcg * 1.0 / sum(pcg, axis=0)
+			# nomin = sum(pcg * log(pcg)) - sum(dot(pcg, logpc)) - sum(dot(logpg, pcg))
+			nomin = sum(pcg / pc / pg[:, None])
+			denom = - dot(pc, logpc) - dot(pg, logpg)
+			print pcg
+			print pc
+			print pg
+			print nomin, denom
+			self.NMI = nomin / denom
+			print "sklearn NMI, NMI =", mutual_info_score(y, ind), nomin
 		return ind
 
 	def get_evals(self):
