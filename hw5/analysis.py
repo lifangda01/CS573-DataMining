@@ -2,6 +2,14 @@ from pylab import *
 from kmeans import KMeans
 from pca import PCA
 
+def get_normalized_labels(y):
+    '''
+        Replace the labels with values starting from 0.
+    '''
+    for i, l in enumerate(unique(y)):
+        y[y == l] = i
+    return y
+
 def A1():
     '''
         Visualizing one digit.
@@ -91,7 +99,7 @@ def B4():
     for i, k, fname in zip([0, 1, 2], [8, 4, 2], fnames):
         raw = genfromtxt(fname, delimiter=',')
         X = raw[:, 2:]
-        y = raw[:, 1]
+        y = get_normalized_labels(raw[:, 1])
         kmeans = KMeans(n_clusters=k)
         ind = kmeans.fit(X, y)
         _, _, nmi[i] = kmeans.get_evals()
