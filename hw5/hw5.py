@@ -14,18 +14,32 @@ set_printoptions(precision=3)
 def main():
 	if args.analysis == 'A1':
 		A1()
-	if args.analysis == 'A2':
+	elif args.analysis == 'A2':
 		A2()
-	if args.analysis == 'B1':
+	elif args.analysis == 'B1':
 		B1()
-	if args.analysis == 'B3':
+	elif args.analysis == 'B3':
 		B3()
-	if args.analysis == 'B4':
+	elif args.analysis == 'B4':
 		B4()
-	if args.analysis == 'Bonus2':
+	elif args.analysis == 'C1':
+		C1()
+	elif args.analysis == 'C2':
+		C2()
+	elif args.analysis == 'C3':
+		C3()
+	elif args.analysis == 'C5':
+		C5()
+	elif args.analysis == 'Bonus2':
 		Bonus2()
-	if args.analysis == 'Bonus3':
+	elif args.analysis == 'Bonus3':
 		Bonus3()
+	else:
+		raw = genfromtxt(args.dataFilename, delimiter=',')
+		X = raw[:, 2:]
+		y = get_normalized_labels(raw[:, 1])
+		kmeans = KMeans(n_clusters=int(args.K))
+		ind = kmeans.fit(X, y)
 
 if __name__ == '__main__':
 	main()
