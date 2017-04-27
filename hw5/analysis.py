@@ -244,7 +244,7 @@ def C5():
 		NMI across distance measures.
 	'''
 
-	k = 8
+	K = [32, 16, 16]
 	methods = ['single', 'complete', 'average']
 	raw = genfromtxt('digits-embedding.csv', delimiter=',')
 	# Randomly select 10 images from each digit
@@ -259,7 +259,7 @@ def C5():
 	for i, m in enumerate(methods):
 		for j in range(10):
 			Z = linkage(X, method=m)
-			ind = fcluster(Z, k, criterion='maxclust')
+			ind = fcluster(Z, K[i], criterion='maxclust')
 			ind = get_normalized_labels(ind)
 			nmi_val[i, j] = nmi(y, ind)
 	print "Average NMI across 10 trials:"
