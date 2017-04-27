@@ -34,6 +34,10 @@ def main():
 		Bonus2()
 	elif args.analysis == 'Bonus3':
 		Bonus3()
+	elif args.analysis == 'Bonus4':
+		Bonus4()
+	elif args.analysis == 'Bonus5':
+		Bonus5()
 	else:
 		raw = genfromtxt(args.dataFilename, delimiter=',')
 		X = raw[:, 2:]

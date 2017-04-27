@@ -70,10 +70,7 @@ def B1(pca=False):
 		Plot WC_SSD and SC over K.
 	'''
 	K = [2, 4, 6, 8, 16, 32]
-	if pca:
-		fnames = ['digits-pca-embedding.csv', 'digits-pca-embedding-2467.csv', 'digits-pca-embedding-67.csv']
-	else:
-		fnames = ['digits-embedding.csv', 'digits-embedding-2467.csv', 'digits-embedding-67.csv']
+	fnames = ['digits-embedding.csv', 'digits-embedding-2467.csv', 'digits-embedding-67.csv']
 	wc_ssd_val = zeros((len(fnames), len(K)))
 	sc_val= zeros((len(fnames), len(K)))
 	for i, fname in enumerate(fnames):  
@@ -307,4 +304,67 @@ def Bonus4():
 	'''
 		Repeat B1, B2, B4 with PCA embedding.
 	'''
-	B1(pca=True)
+	K = [2, 4, 6, 8, 16, 32]
+	fnames = ['digits-pca-embedding.csv', 'digits-pca-embedding-2467.csv', 'digits-pca-embedding-67.csv']
+	wc_ssd_val = zeros((len(fnames), len(K), 10))
+	sc_val= zeros((len(fnames), len(K), 10))
+	nmi_val= zeros((len(fnames), len(K), 10))
+	for i, fname in enumerate(fnames):  
+		raw = genfromtxt(fname, delimiter=',')
+		X = raw[:, 2:]
+		y = get_normalized_labels(raw[:, 1])
+		for j, k in enumerate(K):
+			for m in range(10):
+				kmeans = KMeans(n_clusters=k)
+				ind = kmeans.fit(X, y)
+				wc_ssd_val[i, j, m], sc_val[i, j, m], nmi_val[i, j, m] = kmeans.get_evals()
+		figure()
+		perm = permutation(X.shape[0])[:1000]
+		X = X[perm]
+		ind = ind[perm]
+		colors = rand(k, 3)[ind, :]
+		scatter(X[:, 0], X[:, 1], c=colors, alpha=0.9, s=30)
+	save('Bonus_wc_ssd_val.npy', wc_ssd_val)
+	save('Bonus_sc_val.npy', sc_val)
+	save('Bonus_nmi_val.npy', nmi_val)
+	wc_ssd_val = load('Bonus_wc_ssd_val.npy')
+	sc_val = load('Bonus_sc_val.npy')
+	# nmi_val = load('Bonus_nmi_val.npy')
+	ssd_means = mean(wc_ssd_val, axis=2)
+	sc_means = mean(sc_val, axis=2)
+	ssd_std = std(wc_ssd_val, axis=2)
+	sc_std = std(sc_val, axis=2)
+	# Plot WC_SSD
+	figure()
+	for i, fname in enumerate(fnames):
+		errorbar(K, ssd_means[i], ssd_std[i], capsize=4, label=fname)
+	legend()
+	title('WC_SSD v.s. K')
+	figure()
+	for i, fname in enumerate(fnames):
+		errorbar(K, sc_means[i], sc_std[i], capsize=4, label=fname)
+	legend()
+	title('SC v.s. K')
+	print fnames
+	print "NMI =", mean(nmi_val, axis=2)
+	show()
+
+def Bonus5():
+	'''
+		Visualize clustering results using PCA embedding.
+	'''
+	K = [6, 4, 2]
+	fnames = ['digits-pca-embedding.csv', 'digits-pca-embedding-2467.csv', 'digits-pca-embedding-67.csv']
+	for k, fname in zip(K, fnames):
+		raw = genfromtxt(fname, delimiter=',')
+		X = raw[:, 2:]
+		y = get_normalized_labels(raw[:, 1])
+		kmeans = KMeans(n_clusters=k)
+		ind = kmeans.fit(X, y)
+		figure()
+		perm = permutation(X.shape[0])[:1000]
+		X = X[perm]
+		ind = ind[perm]
+		colors = rand(k, 3)[ind, :]
+		scatter(X[:, 0], X[:, 1], c=colors, alpha=0.9, s=30)
+	show()
