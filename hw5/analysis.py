@@ -22,6 +22,18 @@ def generate_pca_embedding_files():
 	X_new = pca.fit_transform(X)
 	raw_new = hstack((raw[:,:2], X_new))
 	savetxt('digits-pca-embedding.csv', raw_new, delimiter=',')
+	raw = genfromtxt('digits-raw-2467.csv', delimiter=',')
+	X = raw[:, 2:]
+	pca = PCA(10)
+	X_new = pca.fit_transform(X)
+	raw_new = hstack((raw[:,:2], X_new))
+	savetxt('digits-pca-embedding-2467.csv', raw_new, delimiter=',')
+	raw = genfromtxt('digits-raw-67.csv', delimiter=',')
+	X = raw[:, 2:]
+	pca = PCA(10)
+	X_new = pca.fit_transform(X)
+	raw_new = hstack((raw[:,:2], X_new))
+	savetxt('digits-pca-embedding-67.csv', raw_new, delimiter=',')
 
 def generate_subset_files():
 	'''
@@ -34,13 +46,13 @@ def generate_subset_files():
 	savetxt('digits-embedding-2467.csv', raw_new, delimiter=',')
 	raw_new = raw[logical_or(y == 6, y == 7)]
 	savetxt('digits-embedding-67.csv', raw_new, delimiter=',')
-	# PCA embedding
-	raw = genfromtxt('digits-pca-embedding.csv', delimiter=',')
+	# Raw files
+	raw = genfromtxt('digits-raw.csv', delimiter=',')
 	y = raw[:, 1]
 	raw_new = raw[logical_or(y == 2, logical_or(y == 4, logical_or(y == 6, y == 7)))]
-	savetxt('digits-pca-embedding-2467.csv', raw_new, delimiter=',')
+	savetxt('digits-raw-2467.csv', raw_new, delimiter=',')
 	raw_new = raw[logical_or(y == 6, y == 7)]
-	savetxt('digits-pca-embedding-67.csv', raw_new, delimiter=',')
+	savetxt('digits-raw-67.csv', raw_new, delimiter=',')
 
 def A1():
 	'''
@@ -318,12 +330,6 @@ def Bonus4():
 				kmeans = KMeans(n_clusters=k)
 				ind = kmeans.fit(X, y)
 				wc_ssd_val[i, j, m], sc_val[i, j, m], nmi_val[i, j, m] = kmeans.get_evals()
-		figure()
-		perm = permutation(X.shape[0])[:1000]
-		X = X[perm]
-		ind = ind[perm]
-		colors = rand(k, 3)[ind, :]
-		scatter(X[:, 0], X[:, 1], c=colors, alpha=0.9, s=30)
 	save('Bonus_wc_ssd_val.npy', wc_ssd_val)
 	save('Bonus_sc_val.npy', sc_val)
 	save('Bonus_nmi_val.npy', nmi_val)
@@ -353,7 +359,7 @@ def Bonus5():
 	'''
 		Visualize clustering results using PCA embedding.
 	'''
-	K = [6, 4, 2]
+	K = [8, 4, 2]
 	fnames = ['digits-pca-embedding.csv', 'digits-pca-embedding-2467.csv', 'digits-pca-embedding-67.csv']
 	for k, fname in zip(K, fnames):
 		raw = genfromtxt(fname, delimiter=',')
